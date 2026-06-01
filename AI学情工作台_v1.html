@@ -1,0 +1,2022 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 学情工作台</title>
+<style>
+:root {
+  --bg: #f6f4ee;
+  --panel: #fffdf8;
+  --green: #2f8f55;
+  --green-light: #e8f5ee;
+  --orange: #d4862f;
+  --orange-light: #fdf0e0;
+  --red: #c0392b;
+  --red-light: #fdecea;
+  --blue: #2980b9;
+  --blue-light: #e8f4fd;
+  --brown: #9b5c2e;
+  --line: #e8dfd1;
+  --text: #3d2b1f;
+  --muted: #9b8b7a;
+  --radius: 18px;
+  --sidebar: 236px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+/* Layout */
+.app { display: flex; min-height: 100vh; }
+.sidebar { width: var(--sidebar); min-height: 100vh; background: var(--panel); border-right: 1px solid var(--line); position: sticky; top: 0; height: 100vh; overflow-y: auto; display: flex; flex-direction: column; }
+.main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.topbar { background: var(--panel); border-bottom: 1px solid var(--line); padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
+.content { padding: 28px; flex: 1; }
+
+/* Sidebar */
+.sidebar-header { padding: 22px 18px 16px; border-bottom: 1px solid var(--line); }
+.sidebar-logo { font-size: 17px; font-weight: 700; color: var(--green); display: flex; align-items: center; gap: 8px; }
+.sidebar-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+.sidebar-nav { padding: 12px 10px; flex: 1; }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; cursor: pointer; font-size: 14px; color: var(--muted); transition: all 0.15s; margin-bottom: 2px; }
+.nav-item:hover { background: var(--bg); color: var(--text); }
+.nav-item.active { background: var(--green-light); color: var(--green); font-weight: 600; }
+.nav-icon { font-size: 18px; width: 24px; text-align: center; }
+.sidebar-footer { padding: 14px 18px; border-top: 1px solid var(--line); }
+.teacher-info { display: flex; align-items: center; gap: 10px; }
+.avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--green); color: white; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; flex-shrink: 0; }
+.teacher-name { font-size: 14px; font-weight: 600; }
+.teacher-class { font-size: 12px; color: var(--muted); }
+
+/* Topbar */
+.topbar-title { font-size: 18px; font-weight: 700; color: var(--text); }
+.topbar-right { display: flex; align-items: center; gap: 12px; }
+.topbar-date { font-size: 13px; color: var(--muted); }
+
+/* Cards */
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; }
+.card-title { font-size: 15px; font-weight: 700; margin-bottom: 14px; color: var(--text); }
+.card-sub { font-size: 13px; color: var(--muted); margin-bottom: 14px; }
+
+/* KPI Cards */
+.kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+.kpi-card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px 22px; display: flex; align-items: center; gap: 18px; }
+.kpi-icon { width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; }
+.kpi-icon.green { background: #4caf7d; }
+.kpi-icon.orange { background: #f5a623; }
+.kpi-icon.blue { background: #4a90d9; }
+.kpi-icon.red { background: #e8705a; }
+.kpi-label { font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+.kpi-value { font-size: 28px; font-weight: 800; line-height: 1.1; color: var(--text); }
+.kpi-value span { font-size: 15px; font-weight: 600; margin-left: 2px; }
+.kpi-change { font-size: 12px; margin-top: 6px; color: var(--muted); }
+.kpi-change .up { color: #4caf7d; font-weight: 600; }
+
+/* Status Pills */
+.pill { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+.pill.red { background: var(--red-light); color: var(--red); }
+.pill.orange { background: var(--orange-light); color: var(--orange); }
+.pill.blue { background: var(--blue-light); color: var(--blue); }
+.pill.green { background: var(--green-light); color: var(--green); }
+.pill.gray { background: #f0ece6; color: var(--muted); }
+
+/* Buttons */
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 18px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; transition: all 0.15s; }
+.btn-primary { background: var(--green); color: white; }
+.btn-primary:hover { background: #267a49; }
+.btn-secondary { background: var(--panel); color: var(--text); border: 1px solid var(--line); }
+.btn-secondary:hover { background: var(--bg); }
+.btn-orange { background: var(--orange); color: white; }
+.btn-orange:hover { background: #c07828; }
+.btn-sm { padding: 6px 12px; font-size: 13px; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Tables */
+.table { width: 100%; border-collapse: collapse; }
+.table th { text-align: left; font-size: 12px; color: var(--muted); font-weight: 600; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+.table td { padding: 12px; border-bottom: 1px solid var(--line); font-size: 14px; }
+.table tr:last-child td { border-bottom: none; }
+.table tr:hover td { background: var(--bg); }
+.table td a { color: var(--green); cursor: pointer; text-decoration: none; font-weight: 600; }
+.table td a:hover { text-decoration: underline; }
+
+/* Grid layouts */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+.gap-16 { gap: 16px; }
+
+/* Tabs content */
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* Student list + detail layout */
+.student-layout { display: grid; grid-template-columns: 280px 1fr; gap: 20px; }
+.student-list-panel { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.student-list-header { padding: 16px; border-bottom: 1px solid var(--line); }
+.search-input { width: 100%; padding: 8px 12px; border: 1px solid var(--line); border-radius: 8px; font-size: 13px; background: var(--bg); color: var(--text); outline: none; }
+.search-input:focus { border-color: var(--green); }
+.student-item { display: flex; align-items: center; gap: 10px; padding: 12px 16px; cursor: pointer; border-bottom: 1px solid var(--line); transition: background 0.1s; }
+.student-item:last-child { border-bottom: none; }
+.student-item:hover { background: var(--bg); }
+.student-item.active { background: var(--green-light); }
+.student-avatar { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: white; flex-shrink: 0; }
+.student-info { flex: 1; min-width: 0; }
+.student-name { font-size: 14px; font-weight: 600; }
+.student-meta { font-size: 12px; color: var(--muted); }
+
+/* Note blocks */
+.note-block { background: var(--bg); border-radius: 10px; padding: 12px 14px; margin-bottom: 10px; }
+.note-label { font-size: 11px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+.note-content { font-size: 14px; line-height: 1.6; }
+
+/* Weak point tags */
+.tag { display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; margin: 3px; }
+.tag.weak { background: var(--red-light); color: var(--red); }
+.tag.medium { background: var(--orange-light); color: var(--orange); }
+.tag.ok { background: var(--green-light); color: var(--green); }
+.tag.neutral { background: #f0ece6; color: var(--muted); }
+
+/* Upload zone */
+.upload-zone { border: 2px dashed var(--line); border-radius: var(--radius); padding: 40px; text-align: center; cursor: pointer; transition: all 0.15s; }
+.upload-zone:hover { border-color: var(--green); background: var(--green-light); }
+.upload-icon { font-size: 40px; margin-bottom: 12px; }
+.upload-text { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+.upload-sub { font-size: 13px; color: var(--muted); }
+
+/* Kanban */
+.kanban { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.kanban-col { background: var(--bg); border-radius: var(--radius); padding: 14px; min-height: 300px; }
+.kanban-col-header { font-size: 13px; font-weight: 700; color: var(--muted); margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; }
+.kanban-count { background: var(--line); color: var(--muted); border-radius: 20px; padding: 2px 8px; font-size: 12px; }
+.kanban-card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px; margin-bottom: 10px; }
+.kanban-card-title { font-size: 13px; font-weight: 600; margin-bottom: 6px; line-height: 1.4; }
+.kanban-card-meta { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+.kanban-card-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
+
+/* Fake chart */
+.chart-bars { display: flex; align-items: flex-end; gap: 8px; height: 120px; padding: 0 4px; }
+.chart-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.chart-bar { width: 100%; background: var(--green); border-radius: 4px 4px 0 0; transition: height 0.3s; min-height: 4px; }
+.chart-bar.orange { background: var(--orange); }
+.chart-bar.red { background: var(--red); }
+.chart-label { font-size: 11px; color: var(--muted); text-align: center; }
+.chart-value { font-size: 12px; font-weight: 700; color: var(--text); }
+
+/* Worksheet */
+.worksheet { background: white; border: 1px solid #ddd; border-radius: 8px; padding: 32px; font-family: "SimSun", "宋体", serif; }
+.worksheet-header { text-align: center; margin-bottom: 24px; border-bottom: 2px solid #333; padding-bottom: 16px; }
+.worksheet-title { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+.worksheet-info { font-size: 13px; color: #666; display: flex; justify-content: space-between; }
+.worksheet-q { margin-bottom: 20px; }
+.worksheet-q-num { font-weight: 700; margin-right: 6px; }
+.worksheet-line { border-bottom: 1px solid #999; margin: 8px 0; height: 24px; }
+
+/* Toast */
+.toast { position: fixed; bottom: 28px; right: 28px; background: #333; color: white; padding: 12px 20px; border-radius: 10px; font-size: 14px; z-index: 9999; opacity: 0; transform: translateY(10px); transition: all 0.2s; pointer-events: none; }
+.toast.show { opacity: 1; transform: translateY(0); }
+
+/* Empty state */
+.empty-state { text-align: center; padding: 48px 24px; color: var(--muted); border: 2px dashed var(--line); border-radius: var(--radius); }
+.empty-icon { font-size: 36px; margin-bottom: 12px; }
+.empty-text { font-size: 15px; }
+
+/* Loading spinner */
+.loading-wrap { display: flex; align-items: center; gap: 10px; padding: 16px; color: var(--muted); font-size: 14px; }
+.spinner { width: 18px; height: 18px; border: 2px solid var(--line); border-top-color: var(--green); border-radius: 50%; animation: spin 0.7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Misc */
+.section-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; color: var(--text); }
+.divider { border: none; border-top: 1px solid var(--line); margin: 20px 0; }
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.gap-8 { gap: 8px; }
+.gap-12 { gap: 12px; }
+.gap-16 { gap: 16px; }
+.mb-16 { margin-bottom: 16px; }
+.mb-20 { margin-bottom: 20px; }
+.mb-24 { margin-bottom: 24px; }
+.text-muted { color: var(--muted); font-size: 13px; }
+.text-sm { font-size: 13px; }
+.font-bold { font-weight: 700; }
+.w-full { width: 100%; }
+
+/* Textarea */
+textarea { width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 10px; font-size: 14px; font-family: inherit; background: var(--bg); color: var(--text); resize: vertical; outline: none; line-height: 1.6; }
+textarea:focus { border-color: var(--green); }
+select { padding: 8px 12px; border: 1px solid var(--line); border-radius: 8px; font-size: 14px; background: var(--panel); color: var(--text); outline: none; cursor: pointer; }
+select:focus { border-color: var(--green); }
+
+/* Error cause tags */
+.cause-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+.cause-tag { padding: 6px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: 2px solid transparent; transition: all 0.15s; }
+.cause-tag.calc { background: var(--blue-light); color: var(--blue); }
+.cause-tag.read { background: var(--orange-light); color: var(--orange); }
+.cause-tag.concept { background: #f3e8ff; color: #7c3aed; }
+.cause-tag.model { background: var(--red-light); color: var(--red); }
+.cause-tag.habit { background: #f0ece6; color: var(--muted); }
+.cause-tag.selected { border-color: currentColor; }
+
+/* Feedback status */
+.feedback-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.feedback-row:last-child { border-bottom: none; }
+
+/* Progress bar */
+.progress-bar { height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 3px; background: var(--green); }
+.progress-fill.orange { background: var(--orange); }
+.progress-fill.red { background: var(--red); }
+
+@media print {
+  .sidebar, .topbar, .no-print { display: none !important; }
+  .main { display: block; }
+  .content { padding: 0; }
+  .tab-content { display: none !important; }
+  #tab-homework { display: block !important; }
+  .worksheet { border: none; padding: 0; }
+}
+
+/* Knowledge Map */
+.km-layout { display: grid; grid-template-columns: 260px 1fr; gap: 20px; }
+.km-sidebar { display: flex; flex-direction: column; gap: 10px; }
+.km-student-card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; cursor: pointer; transition: all 0.15s; }
+.km-student-card:hover { border-color: var(--green); }
+.km-student-card.active { border-color: var(--green); background: var(--green-light); }
+.km-student-name { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+.km-student-weak { display: flex; flex-wrap: wrap; gap: 4px; }
+
+.km-main { }
+.km-domain { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); margin-bottom: 16px; overflow: hidden; }
+.km-domain-header { display: flex; align-items: center; gap: 10px; padding: 14px 18px; cursor: pointer; user-select: none; }
+.km-domain-icon { font-size: 20px; }
+.km-domain-label { font-size: 16px; font-weight: 700; flex: 1; }
+.km-domain-stats { font-size: 12px; color: var(--muted); }
+.km-domain-toggle { font-size: 12px; color: var(--muted); transition: transform 0.2s; }
+.km-domain-toggle.open { transform: rotate(90deg); }
+.km-domain-body { padding: 0 18px 16px; display: none; }
+.km-domain-body.open { display: block; }
+
+.km-category { margin-bottom: 14px; }
+.km-category-label { font-size: 13px; font-weight: 700; color: var(--muted); margin-bottom: 8px; padding-left: 4px; }
+.km-nodes { display: flex; flex-wrap: wrap; gap: 8px; }
+.km-node { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; border: 2px solid transparent; transition: all 0.15s; position: relative; }
+.km-node.mastered { background: var(--green-light); color: var(--green); border-color: var(--green); }
+.km-node.weak { background: var(--red-light); color: var(--red); border-color: var(--red); }
+.km-node.partial { background: var(--orange-light); color: var(--orange); border-color: var(--orange); }
+.km-node.untested { background: #f0ece6; color: var(--muted); border-color: var(--line); }
+.km-node:hover { filter: brightness(0.95); }
+.km-node-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+.km-node-count { font-size: 11px; opacity: 0.8; }
+
+.km-legend { display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
+.km-legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+.km-legend-dot { width: 10px; height: 10px; border-radius: 3px; }
+
+.km-node-tooltip { position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%); background: #333; color: white; font-size: 12px; padding: 6px 10px; border-radius: 6px; white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity 0.15s; z-index: 100; }
+.km-node:hover .km-node-tooltip { opacity: 1; }
+
+.km-action-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; padding: 14px 18px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); }
+</style>
+</head>
+<body>
+<div class="app">
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">
+      <span>📚</span>
+      <span>AI 学情工作台</span>
+    </div>
+    <div class="sidebar-sub">小学数学教培助手</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-item active" onclick="switchTab('dashboard', this)">
+      <span class="nav-icon">📊</span><span>仪表盘</span>
+    </div>
+    <div class="nav-item" onclick="switchTab('students', this)">
+      <span class="nav-icon">👨‍🎓</span><span>学生管理</span>
+    </div>
+    <div class="nav-item" onclick="switchTab('homework', this)">
+      <span class="nav-icon">📄</span><span>作业生成</span>
+    </div>
+    <div class="nav-item" onclick="switchTab('mistakes', this)">
+      <span class="nav-icon">🔍</span><span>错题分析</span>
+    </div>
+    <div class="nav-item" onclick="switchTab('agent', this)">
+      <span class="nav-icon">🤖</span><span>接入 Agent</span>
+    </div>
+    <div class="nav-item" onclick="switchTab('questions', this)">
+      <span class="nav-icon">🗂️</span><span>题库管理</span>
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="teacher-info">
+      <div class="avatar">王</div>
+      <div>
+        <div class="teacher-name">王老师</div>
+        <div class="teacher-class">三年级（2）班</div>
+      </div>
+    </div>
+  </div>
+</aside>
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title" id="topbar-title">仪表盘</div>
+    <div class="topbar-right">
+      <span class="topbar-date" id="topbar-date"></span>
+      <div class="avatar" style="width:32px;height:32px;font-size:13px;">王</div>
+    </div>
+  </div>
+  <div class="content">
+    <!-- PLACEHOLDER for tab content, filled by JS -->
+    <div id="tab-dashboard" class="tab-content active"></div>
+    <div id="tab-knowledgemap" class="tab-content"></div>
+    <div id="tab-students" class="tab-content"></div>
+    <div id="tab-questions" class="tab-content"></div>
+    <div id="tab-homework" class="tab-content"></div>
+    <div id="tab-mistakes" class="tab-content"></div>
+    <div id="tab-agent" class="tab-content"></div>
+  </div>
+</div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+// ============================================================
+// API LAYER
+// ============================================================
+const API = 'http://localhost:3001/api';
+
+const api = {
+  async get(path) {
+    const r = await fetch(API + path);
+    return r.json();
+  },
+  async post(path, body) {
+    const r = await fetch(API + path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    return r.json();
+  },
+  async put(path, body) {
+    const r = await fetch(API + path, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    return r.json();
+  },
+  async delete(path) {
+    const r = await fetch(API + path, { method: 'DELETE' });
+    return r.json();
+  }
+};
+
+// 颜色映射（数据库不存 color，前端按 status 派发）
+const statusColors = { 'high-risk': '#e74c3c', 'follow-up': '#e67e22', 'progress': '#2980b9', 'stable': '#27ae60' };
+function withColor(s) { return { ...s, color: statusColors[s.status] || '#9b8b7a' }; }
+
+// ============================================================
+// MOCK DATA（种子数据，仅首次写入数据库用）
+// ============================================================
+const mockData = {
+  teacher: { name: "王老师", class: "三年级（2）班", subject: "小学数学" },
+  students: [
+    { id: 1, name: "张小雨", grade: "三年级", status: "high-risk", color: "#e74c3c",
+      weakPoints: ["分数应用题", "审题漏条件", "单位换算"],
+      errorCauses: { "审题类": 45, "建模类": 30, "计算类": 25 },
+      homeworkRate: 72, lastRecord: "2026-05-28",
+      suggestion: "下次课重点练习分数应用题的审题步骤，建议用画图法辅助理解题意。",
+      recentErrors: ["3/4 + 1/2 = 5/6（分母未通分）", "行程问题漏读速度条件", "千克与克换算错误"],
+      notes: "上课注意力容易分散，需要多互动提问。家长反映在家做题时间不够。"
+    },
+    { id: 2, name: "李明浩", grade: "三年级", status: "follow-up", color: "#e67e22",
+      weakPoints: ["应用题建模", "乘法竖式"],
+      errorCauses: { "建模类": 50, "计算类": 35, "习惯类": 15 },
+      homeworkRate: 88, lastRecord: "2026-05-27",
+      suggestion: "乘法竖式已有进步，本周重点攻克两步应用题的解题思路。",
+      recentErrors: ["两步应用题列式错误", "三位数乘两位数进位遗漏"],
+      notes: "学习态度认真，但解题思路不够灵活。"
+    },
+    { id: 3, name: "陈思琪", grade: "三年级", status: "progress", color: "#2980b9",
+      weakPoints: ["时间计算"],
+      errorCauses: { "概念类": 60, "计算类": 40 },
+      homeworkRate: 95, lastRecord: "2026-05-28",
+      suggestion: "时间计算概念已基本掌握，可以适当增加难度，引入跨天计算。",
+      recentErrors: ["跨小时时间差计算"],
+      notes: "进步明显，上周时间计算正确率从60%提升到85%。"
+    },
+    { id: 4, name: "王子轩", grade: "三年级", status: "stable", color: "#27ae60",
+      weakPoints: [],
+      errorCauses: { "计算类": 30, "习惯类": 20 },
+      homeworkRate: 98, lastRecord: "2026-05-26",
+      suggestion: "基础扎实，可以尝试奥数入门题目，培养数学思维。",
+      recentErrors: ["偶尔粗心计算错误"],
+      notes: "班级前三名，可以适当拔高。"
+    },
+    { id: 5, name: "刘雨桐", grade: "三年级", status: "high-risk", color: "#e74c3c",
+      weakPoints: ["除法竖式", "余数概念", "应用题"],
+      errorCauses: { "概念类": 55, "计算类": 30, "审题类": 15 },
+      homeworkRate: 65, lastRecord: "2026-05-25",
+      suggestion: "除法概念需要从头梳理，建议用实物分组的方式重新建立直觉。",
+      recentErrors: ["有余数除法商写错位置", "余数大于除数", "应用题不知道用除法"],
+      notes: "基础较弱，需要额外补课。家长配合度高。"
+    },
+    { id: 6, name: "赵浩然", grade: "三年级", status: "follow-up", color: "#e67e22",
+      weakPoints: ["图形面积", "周长与面积混淆"],
+      errorCauses: { "概念类": 70, "建模类": 30 },
+      homeworkRate: 82, lastRecord: "2026-05-27",
+      suggestion: "周长和面积的概念需要通过实际操作来区分，下次课带尺子量教室。",
+      recentErrors: ["把周长公式用于面积计算", "不规则图形分割方法不对"],
+      notes: "空间想象力较弱，需要多做图形题。"
+    },
+    { id: 7, name: "孙晓萌", grade: "三年级", status: "progress", color: "#2980b9",
+      weakPoints: ["小数加减"],
+      errorCauses: { "计算类": 65, "习惯类": 35 },
+      homeworkRate: 90, lastRecord: "2026-05-28",
+      suggestion: "小数点对齐的习惯已经养成，继续巩固，可以开始小数乘法预习。",
+      recentErrors: ["小数点未对齐导致计算错误"],
+      notes: "书写工整，计算习惯在改善中。"
+    },
+    { id: 8, name: "周天宇", grade: "三年级", status: "stable", color: "#27ae60",
+      weakPoints: ["速算技巧"],
+      errorCauses: { "习惯类": 50, "计算类": 50 },
+      homeworkRate: 93, lastRecord: "2026-05-26",
+      suggestion: "基础稳定，重点提升计算速度，练习凑整法和补差法。",
+      recentErrors: ["计算速度慢，考试时间不够"],
+      notes: "理解能力强，但计算速度是短板。"
+    }
+  ],
+  questions: [
+    { id: 1, content: "小明有苹果24个，分给6个小朋友，每人分几个？", type: "应用题", difficulty: "基础", knowledgePoint: "除法", answer: "4个", status: "approved" },
+    { id: 2, content: "一个长方形长8厘米，宽5厘米，求周长和面积。", type: "计算题", difficulty: "基础", knowledgePoint: "图形面积", answer: "周长26cm，面积40cm²", status: "approved" },
+    { id: 3, content: "3/4 + 1/4 = ？", type: "计算题", difficulty: "基础", knowledgePoint: "分数加减", answer: "1", status: "approved" },
+    { id: 4, content: "火车上午8:30出发，行驶了3小时45分钟，几点到达？", type: "应用题", difficulty: "提升", knowledgePoint: "时间计算", answer: "12:15", status: "approved" },
+    { id: 5, content: "一件衣服原价120元，打八折后多少钱？", type: "应用题", difficulty: "提升", knowledgePoint: "折扣计算", answer: "96元", status: "approved" },
+    { id: 6, content: "计算：125 × 8 = ？（用简便方法）", type: "计算题", difficulty: "提升", knowledgePoint: "速算技巧", answer: "1000", status: "approved" },
+    { id: 7, content: "一个正方形边长6cm，求面积。", type: "计算题", difficulty: "基础", knowledgePoint: "图形面积", answer: "36cm²", status: "pending-review" },
+    { id: 8, content: "小红有36张贴纸，比小明多12张，小明有多少张？", type: "应用题", difficulty: "基础", knowledgePoint: "应用题建模", answer: "24张", status: "pending-review" },
+    { id: 9, content: "0.5 + 0.35 = ？", type: "计算题", difficulty: "基础", knowledgePoint: "小数加减", answer: "0.85", status: "pending-ocr" },
+    { id: 10, content: "一桶油重15千克，用去了2/5，还剩多少千克？", type: "应用题", difficulty: "提升", knowledgePoint: "分数应用题", answer: "9千克", status: "pending-ocr" }
+  ],
+  reminders: [
+    { type: "urgent", text: "张小雨 本周作业完成率仅72%，需联系家长", student: 1 },
+    { type: "urgent", text: "刘雨桐 连续3次除法作业错误率超50%", student: 5 },
+    { type: "normal", text: "李明浩 应用题建模专项练习已准备好，待发送", student: 2 },
+    { type: "normal", text: "陈思琪 本周进步明显，可以发送鼓励反馈给家长", student: 3 },
+    { type: "info", text: "题库新增10道分数应用题待审核" }
+  ],
+  knowledgeTree: [
+    { id: 'num', label: '数与运算', icon: '🔢', children: [
+      { id: 'int-add', label: '整数加减法', children: [
+        { id: 'int-add-basic', label: '两位数加减', grade: 1 },
+        { id: 'int-add-carry', label: '进退位加减', grade: 2 },
+        { id: 'int-add-multi', label: '多位数加减', grade: 3 }
+      ]},
+      { id: 'int-mul', label: '整数乘除法', children: [
+        { id: 'mul-table', label: '乘法口诀', grade: 2 },
+        { id: 'mul-vertical', label: '乘法竖式', grade: 3 },
+        { id: 'div-basic', label: '除法基础', grade: 2 },
+        { id: 'div-remainder', label: '有余数除法', grade: 3 },
+        { id: 'div-vertical', label: '除法竖式', grade: 3 }
+      ]},
+      { id: 'fraction', label: '分数', children: [
+        { id: 'frac-concept', label: '分数概念', grade: 3 },
+        { id: 'frac-compare', label: '分数大小比较', grade: 3 },
+        { id: 'frac-add', label: '分数加减法', grade: 3 },
+        { id: 'frac-app', label: '分数应用题', grade: 3 }
+      ]},
+      { id: 'decimal', label: '小数', children: [
+        { id: 'dec-concept', label: '小数概念', grade: 3 },
+        { id: 'dec-add', label: '小数加减', grade: 3 },
+        { id: 'dec-mul', label: '小数乘除', grade: 4 }
+      ]}
+    ]},
+    { id: 'measure', label: '度量与单位', icon: '📏', children: [
+      { id: 'length', label: '长度单位', children: [
+        { id: 'length-basic', label: '米/厘米/毫米', grade: 2 },
+        { id: 'length-km', label: '千米/分米', grade: 3 }
+      ]},
+      { id: 'weight', label: '重量单位', children: [
+        { id: 'weight-basic', label: '千克/克', grade: 3 },
+        { id: 'weight-ton', label: '吨', grade: 3 }
+      ]},
+      { id: 'time', label: '时间', children: [
+        { id: 'time-clock', label: '认识时钟', grade: 1 },
+        { id: 'time-calc', label: '时间计算', grade: 3 },
+        { id: 'time-cross', label: '跨天时间计算', grade: 3 }
+      ]}
+    ]},
+    { id: 'geometry', label: '图形与空间', icon: '📐', children: [
+      { id: 'shape-2d', label: '平面图形', children: [
+        { id: 'shape-basic', label: '认识图形', grade: 1 },
+        { id: 'perimeter', label: '周长', grade: 3 },
+        { id: 'area', label: '面积', grade: 3 },
+        { id: 'area-formula', label: '面积公式', grade: 3 }
+      ]},
+      { id: 'shape-3d', label: '立体图形', children: [
+        { id: 'solid-basic', label: '认识立体图形', grade: 2 },
+        { id: 'solid-surface', label: '表面积', grade: 5 }
+      ]}
+    ]},
+    { id: 'word-problem', label: '应用题', icon: '📝', children: [
+      { id: 'wp-1step', label: '一步应用题', children: [
+        { id: 'wp-add', label: '加减应用题', grade: 1 },
+        { id: 'wp-mul', label: '乘除应用题', grade: 2 }
+      ]},
+      { id: 'wp-2step', label: '两步应用题', children: [
+        { id: 'wp-2step-basic', label: '两步混合运算', grade: 3 },
+        { id: 'wp-model', label: '应用题建模', grade: 3 }
+      ]},
+      { id: 'wp-special', label: '专题应用题', children: [
+        { id: 'wp-speed', label: '行程问题', grade: 4 },
+        { id: 'wp-discount', label: '折扣问题', grade: 4 },
+        { id: 'wp-ratio', label: '比例问题', grade: 6 }
+      ]}
+    ]}
+  ],
+  feedbackDrafts: {
+    1: { status: "draft", text: "王老师您好！张小雨本周在分数应用题方面仍有困难，主要问题是审题时容易漏掉条件。建议在家练习时，先让孩子用自己的话复述题目，再动笔计算。本周作业完成率72%，希望家长督促孩子按时完成。下次课将重点练习审题方法。" },
+    2: { status: "sent", text: "王老师您好！李明浩本周乘法竖式有明显进步，进位错误减少了很多。应用题建模还需要继续练习，下次课会专项训练两步应用题。孩子上课认真，请继续保持！" },
+    3: { status: "draft", text: "王老师您好！陈思琪本周进步非常明显！时间计算正确率从60%提升到85%，非常棒！下次课将开始跨天时间计算，难度会稍有提升，请家长鼓励孩子保持信心。" },
+    5: { status: "none", text: "" },
+    6: { status: "draft", text: "王老师您好！赵浩然本周在图形面积学习中遇到了困难，主要是周长和面积的概念容易混淆。下次课会用实物操作的方式帮助理解。建议在家用尺子量量家里的桌子，感受一下周长和面积的区别。" }
+  }
+};
+
+// ============================================================
+// STATE
+// ============================================================
+// mockData.students / mockData.questions 在 init 后由 API 数据填充
+let currentStudent = null;
+let currentTab = 'dashboard';
+let kanbanData = { 'pending-ocr': [], 'pending-review': [], 'approved': [] };
+let kmSelectedStudent = null;
+
+// ============================================================
+// UTILITIES
+// ============================================================
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+function statusLabel(s) {
+  const map = { 'high-risk': ['red', '需关注'], 'follow-up': ['orange', '待跟进'], 'progress': ['blue', '进步中'], 'stable': ['green', '稳定'] };
+  const [cls, label] = map[s] || ['gray', s];
+  return `<span class="pill ${cls}">${label}</span>`;
+}
+
+function avatarHtml(student, size = 34) {
+  return `<div class="student-avatar" style="width:${size}px;height:${size}px;background:${student.color};font-size:${Math.round(size*0.38)}px;">${student.name[0]}</div>`;
+}
+
+function setDate() {
+  const d = new Date();
+  const days = ['日','一','二','三','四','五','六'];
+  document.getElementById('topbar-date').textContent = `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 周${days[d.getDay()]}`;
+}
+
+// ============================================================
+// TAB SWITCHING
+// ============================================================
+const tabTitles = {
+  dashboard: '仪表盘', students: '学生管理',
+  questions: '题库管理', homework: '作业生成', mistakes: '错题分析', agent: '接入 Agent'
+};
+
+function switchTab(name, el) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  if (el) el.classList.add('active');
+  document.getElementById('topbar-title').textContent = tabTitles[name];
+  currentTab = name;
+  renderTab(name);
+}
+
+function renderTab(name) {
+  const fns = {
+    dashboard: renderDashboard,
+    students: renderStudents,
+    questions: renderQuestions,
+    homework: renderHomework,
+    mistakes: renderMistakes,
+    agent: renderAgent
+  };
+  if (fns[name]) fns[name]();
+}
+
+// ============================================================
+// DASHBOARD
+// ============================================================
+function renderDashboard() {
+  const urgent = mockData.students.filter(s => s.status === 'high-risk');
+  const followUp = mockData.students.filter(s => s.status === 'follow-up');
+  const qCount = mockData.questions.filter(q => q.status === 'approved').length;
+  const avgRate = mockData.students.length
+    ? Math.round(mockData.students.reduce((sum, s) => sum + (s.homeworkRate || 0), 0) / mockData.students.length)
+    : 0;
+
+  document.getElementById('tab-dashboard').innerHTML = `
+    <div class="kpi-grid mb-24">
+      <div class="kpi-card">
+        <div class="kpi-icon green">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="white"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+        </div>
+        <div>
+          <div class="kpi-label">学生总数</div>
+          <div class="kpi-value">${mockData.students.length}<span>人</span></div>
+          <div class="kpi-change">本班在读</div>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon orange">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="white"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+        </div>
+        <div>
+          <div class="kpi-label">需关注学生</div>
+          <div class="kpi-value">${urgent.length}<span>人</span></div>
+          <div class="kpi-change">${followUp.length > 0 ? `另有 ${followUp.length} 人待跟进 ›` : '其余状态正常'}</div>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon blue">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="white"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg>
+        </div>
+        <div>
+          <div class="kpi-label">平均作业完成率</div>
+          <div class="kpi-value">${avgRate}<span>%</span></div>
+          <div class="kpi-change">${avgRate >= 90 ? '<span class="up">+良好 ↑</span>' : avgRate >= 75 ? '有待提升' : '需重点跟进'}</div>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon red">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="white"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
+        </div>
+        <div>
+          <div class="kpi-label">高风险学生</div>
+          <div class="kpi-value">${urgent.length}<span>人</span></div>
+          <div class="kpi-change">及时关注 ›</div>
+        </div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px">
+      <!-- 今日提醒 -->
+      <div class="card">
+        <div class="card-title" style="margin-bottom:14px">今日提醒</div>
+        ${mockData.reminders.length === 0
+          ? '<div class="empty-state" style="padding:20px"><div class="empty-text">暂无提醒</div></div>'
+          : mockData.reminders.map((r, i) => {
+              const colors = ['var(--red)', 'var(--orange)', 'var(--blue)', 'var(--green)'];
+              const color = r.type === 'urgent' ? 'var(--red)' : r.type === 'normal' ? 'var(--orange)' : 'var(--blue)';
+              return `
+                <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)">
+                  <div style="width:22px;height:22px;border-radius:50%;background:${color};color:white;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">${i+1}</div>
+                  <div style="font-size:13px;line-height:1.55;color:var(--text)">${r.text}</div>
+                </div>
+              `;
+            }).join('')
+        }
+      </div>
+
+      <!-- 学生概览 -->
+      <div class="card" style="grid-column:span 2">
+        <div class="card-title" style="margin-bottom:14px">学生概览</div>
+        <table class="table">
+          <thead><tr><th>学生</th><th>主要薄弱点</th><th>最近错因</th><th>状态</th><th></th></tr></thead>
+          <tbody>
+            ${mockData.students.slice(0, 6).map(s => {
+              const topCause = Object.entries(s.errorCauses || {}).sort((a,b)=>b[1]-a[1])[0];
+              return `
+                <tr>
+                  <td><div class="flex items-center gap-8">${avatarHtml(s, 26)}<a onclick="goToStudent(${s.id})">${s.name}</a></div></td>
+                  <td>${s.weakPoints.slice(0,1).map(w=>`<span class="tag weak" style="font-size:11px">${w}</span>`).join('') || '<span class="text-muted text-sm">暂无</span>'}</td>
+                  <td class="text-muted" style="font-size:13px">${topCause ? topCause[0] : '—'}</td>
+                  <td>${statusLabel(s.status)}</td>
+                  <td><button class="btn btn-primary btn-sm" onclick="goToStudent(${s.id}, true)">出题</button></td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px">
+      <!-- 班级薄弱点分布 -->
+      <div class="card">
+        <div class="card-title" style="margin-bottom:14px">班级薄弱点分布</div>
+        ${(() => {
+          const wpCount = {};
+          mockData.students.forEach(s => (s.weakPoints||[]).forEach(w => { wpCount[w] = (wpCount[w]||0)+1; }));
+          const sorted = Object.entries(wpCount).sort((a,b)=>b[1]-a[1]).slice(0,6);
+          const max = sorted[0]?.[1] || 1;
+          if (sorted.length === 0) return '<div class="empty-state" style="padding:20px"><div class="empty-text">暂无薄弱点数据</div></div>';
+          return sorted.map(([kp, cnt]) => `
+            <div style="margin-bottom:10px">
+              <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px">
+                <span>${kp}</span>
+                <span class="text-muted">${cnt} 人</span>
+              </div>
+              <div style="height:8px;background:var(--bg);border-radius:4px;overflow:hidden">
+                <div style="height:100%;width:${Math.round(cnt/max*100)}%;background:var(--red);border-radius:4px;transition:width 0.3s"></div>
+              </div>
+            </div>
+          `).join('');
+        })()}
+      </div>
+
+      <!-- 题库新增 -->
+      <div class="card" style="grid-column:span 2">
+        <div class="card-title" style="margin-bottom:14px">题库新增</div>
+        ${(() => {
+          const recent = [...kanbanData['pending-ocr'], ...kanbanData['pending-review']].slice(0, 5);
+          const approved = kanbanData['approved'].slice(-3).reverse();
+          if (recent.length === 0 && approved.length === 0) {
+            return '<div class="empty-state" style="padding:20px"><div class="empty-text">暂无新增题目</div></div>';
+          }
+          return `
+            ${recent.length > 0 ? `
+              <div class="text-muted text-sm" style="margin-bottom:8px">待处理（${recent.length} 道）</div>
+              ${recent.map(q => `
+                <div style="display:flex;align-items:center;gap-8px;padding:8px 0;border-bottom:1px solid var(--line);font-size:13px">
+                  <span class="pill orange" style="font-size:10px;margin-right:8px">${q.status==='pending-ocr'?'待识别':'待审核'}</span>
+                  <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${q.content}</span>
+                </div>
+              `).join('')}
+            ` : ''}
+            ${approved.length > 0 ? `
+              <div class="text-muted text-sm" style="margin:${recent.length?'12px':0} 0 8px">最近入库</div>
+              ${approved.map(q => `
+                <div style="display:flex;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);font-size:13px;gap:8px">
+                  <span class="pill green" style="font-size:10px">已入库</span>
+                  <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${q.content}</span>
+                </div>
+              `).join('')}
+            ` : ''}
+            <div style="margin-top:12px">
+              <button class="btn btn-secondary btn-sm" onclick="switchTab('questions', document.querySelector('.nav-item[onclick*=\\'questions\\']'))">查看全部题库 ›</button>
+            </div>
+          `;
+        })()}
+      </div>
+    </div>
+  `;
+}
+
+function goToStudent(id, goHomework) {
+  currentStudent = mockData.students.find(s => s.id === id);
+  const target = goHomework ? 'homework' : 'students';
+  const navEl = document.querySelector(`.nav-item[onclick*="'${target}'"]`);
+  switchTab(target, navEl);
+}
+
+// ============================================================
+// STUDENTS
+// ============================================================
+function renderStudents() {
+  document.getElementById('tab-students').innerHTML = `
+    <div class="student-layout">
+      <div class="student-list-panel">
+        <div class="student-list-header">
+          <div class="km-student-card ${currentStudent === null ? 'active' : ''}" style="margin-bottom:10px;cursor:pointer" onclick="selectClassOverview()">
+            <div class="km-student-name">📊 班级总览</div>
+            <div class="text-muted text-sm">查看全班知识点掌握分布</div>
+          </div>
+          <input class="search-input" placeholder="搜索学生姓名..." oninput="filterStudents(this.value)" id="student-search">
+          <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap">
+            <button class="btn btn-secondary btn-sm" onclick="filterByStatus('')">全部</button>
+            <button class="btn btn-sm" style="background:var(--red-light);color:var(--red);border:none" onclick="filterByStatus('high-risk')">需关注</button>
+            <button class="btn btn-sm" style="background:var(--orange-light);color:var(--orange);border:none" onclick="filterByStatus('follow-up')">待跟进</button>
+          </div>
+        </div>
+        <div id="student-list-items">
+          ${renderStudentListItems(mockData.students)}
+        </div>
+      </div>
+      <div id="student-detail">
+        ${renderStudentDetail(currentStudent)}
+      </div>
+    </div>
+  `;
+}
+
+function renderStudentListItems(students) {
+  return students.map(s => `
+    <div class="student-item ${currentStudent && s.id === currentStudent.id ? 'active' : ''}" onclick="selectStudent(${s.id})">
+      ${avatarHtml(s)}
+      <div class="student-info">
+        <div class="student-name">${s.name}</div>
+        <div class="student-meta">${statusLabel(s.status)}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderStudentDetail(s) {
+  if (s === null) return renderClassOverviewDetail();
+  const causeEntries = Object.entries(s.errorCauses);
+  const maxVal = Math.max(...causeEntries.map(e => e[1]));
+  const draft = mockData.feedbackDrafts[s.id];
+  const activeTab = window._studentDetailTab || 'info';
+  return `
+    <div>
+      <!-- tab 切换 -->
+      <div style="display:flex;gap:4px;margin-bottom:16px;border-bottom:1px solid var(--line);padding-bottom:0">
+        <button onclick="switchStudentTab('info')" style="padding:8px 16px;font-size:13px;font-weight:600;border:none;background:none;cursor:pointer;border-bottom:2px solid ${activeTab==='info'?'var(--green)':'transparent'};color:${activeTab==='info'?'var(--green)':'var(--muted)'}">学情档案</button>
+        <button onclick="switchStudentTab('km')" style="padding:8px 16px;font-size:13px;font-weight:600;border:none;background:none;cursor:pointer;border-bottom:2px solid ${activeTab==='km'?'var(--green)':'transparent'};color:${activeTab==='km'?'var(--green)':'var(--muted)'}">知识点掌握</button>
+      </div>
+
+      ${activeTab === 'info' ? renderStudentInfoTab(s, draft, causeEntries, maxVal) : renderStudentKMTab(s)}
+    </div>
+  `;
+}
+
+function switchStudentTab(tab) {
+  window._studentDetailTab = tab;
+  document.getElementById('student-detail').innerHTML = renderStudentDetail(currentStudent);
+}
+
+function renderStudentInfoTab(s, draft, causeEntries, maxVal) {
+  return `
+      <!-- 头部 + 快捷操作 -->
+      <div class="card mb-16">
+        <div class="flex items-center gap-12">
+          ${avatarHtml(s, 48)}
+          <div style="flex:1">
+            <div style="font-size:20px;font-weight:800">${s.name}</div>
+            <div class="text-muted" style="margin-top:2px">${s.grade} · ${statusLabel(s.status)}</div>
+          </div>
+          <div class="flex gap-8">
+            <button class="btn btn-primary btn-sm" onclick="goToStudent(${s.id}, true)">📄 出题</button>
+            <button class="btn btn-secondary btn-sm" onclick="showFeedbackPanel(${s.id})">💬 家长反馈</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 薄弱点 + 错误分布 -->
+      <div class="card mb-16">
+        <div class="card-title">学情分析</div>
+        <div class="mb-16">
+          <div class="note-label" style="margin-bottom:8px">薄弱知识点</div>
+          <div>${s.weakPoints.length ? s.weakPoints.map(w => `<span class="tag weak">${w}</span>`).join('') : '<span class="tag ok">暂无明显薄弱点</span>'}</div>
+        </div>
+        <div class="mb-16">
+          <div class="note-label" style="margin-bottom:10px">错误原因分布</div>
+          <div class="chart-bars" style="height:90px">
+            ${causeEntries.map(([k,v]) => `
+              <div class="chart-bar-wrap">
+                <div class="chart-value">${v}%</div>
+                <div class="chart-bar ${v===maxVal?'red':'orange'}" style="height:${Math.round(v/maxVal*65)}px"></div>
+                <div class="chart-label">${k}</div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        ${s.recentErrors.length ? `
+          <div>
+            <div class="note-label" style="margin-bottom:8px">近期典型错误</div>
+            ${s.recentErrors.map(e => `<div class="note-block" style="margin-bottom:6px"><div class="note-content text-sm">❌ ${e}</div></div>`).join('')}
+          </div>
+        ` : ''}
+      </div>
+
+      <!-- 课后记录（内嵌） -->
+      <div class="card mb-16">
+        <div class="card-title">课后记录</div>
+        <textarea id="inline-record-${s.id}" rows="3" placeholder="记录今天课上的情况，薄弱点、进步、下次课重点..."></textarea>
+        <div class="flex gap-8" style="margin-top:10px">
+          <button class="btn btn-primary btn-sm" onclick="saveInlineRecord(${s.id})">保存记录</button>
+        </div>
+        <div style="margin-top:14px">
+          <div class="note-label" style="margin-bottom:8px">历史记录</div>
+          <div class="note-block">
+            <div class="note-label">${s.lastRecord}</div>
+            <div class="note-content text-sm">${s.suggestion}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 家长反馈（内嵌，默认折叠） -->
+      <div class="card" id="feedback-panel-${s.id}" style="display:none">
+        <div class="card-title">家长反馈</div>
+        ${draft && draft.text ? `
+          <textarea id="feedback-text-${s.id}" rows="5">${draft.text}</textarea>
+          <div class="flex gap-8" style="margin-top:10px">
+            <button class="btn btn-primary btn-sm" onclick="copyInlineFeedback(${s.id})">📋 复制</button>
+            <button class="btn btn-secondary btn-sm" onclick="showToast('已标记为已发送')">✅ 已发送</button>
+            <button class="btn btn-secondary btn-sm" onclick="genInlineFeedback(${s.id})">🔄 重新生成</button>
+          </div>
+        ` : `
+          <div class="note-block mb-12">
+            <div class="note-label">将基于以下信息生成</div>
+            <div class="note-content text-sm">薄弱点：${s.weakPoints.join('、') || '暂无'} · 最近记录：${s.lastRecord}</div>
+          </div>
+          <button class="btn btn-primary btn-sm" id="gen-feedback-btn-${s.id}" onclick="genInlineFeedback(${s.id})">✨ 生成反馈草稿</button>
+        `}
+      </div>
+    </div>
+  `;
+}
+
+function renderStudentKMTab(s) {
+  kmSelectedStudent = s.id;
+  return `
+    <div>
+      <div class="km-action-bar" style="margin-bottom:12px">
+        <div class="km-legend">
+          <div class="km-legend-item"><div class="km-legend-dot" style="background:var(--green)"></div>已掌握</div>
+          <div class="km-legend-item"><div class="km-legend-dot" style="background:var(--orange)"></div>部分掌握</div>
+          <div class="km-legend-item"><div class="km-legend-dot" style="background:var(--red)"></div>薄弱</div>
+          <div class="km-legend-item"><div class="km-legend-dot" style="background:#e0d8ce"></div>未测试</div>
+        </div>
+        <button class="btn btn-primary btn-sm" style="margin-left:auto" onclick="goToStudent(${s.id}, true)">针对薄弱点出题</button>
+      </div>
+      <div id="km-tree">${renderKMTree()}</div>
+      <div class="text-muted text-sm" style="margin-top:10px">点击知识点节点可切换掌握状态</div>
+    </div>
+  `;
+}
+
+function renderClassOverviewDetail() {
+  kmSelectedStudent = null;
+  return `
+    <div>
+      <div class="card mb-16" style="padding:16px 20px">
+        <div style="font-size:18px;font-weight:800;margin-bottom:4px">📊 班级总览</div>
+        <div class="text-muted text-sm">全班知识点掌握分布 · 红色表示该知识点有学生薄弱</div>
+      </div>
+      <div class="km-action-bar" style="margin-bottom:12px">
+        <div class="km-legend">
+          <div class="km-legend-item"><div class="km-legend-dot" style="background:var(--green)"></div>全班掌握</div>
+          <div class="km-legend-item"><div class="km-legend-dot" style="background:var(--orange)"></div>部分掌握</div>
+          <div class="km-legend-item"><div class="km-legend-dot" style="background:var(--red)"></div>有人薄弱</div>
+          <div class="km-legend-item"><div class="km-legend-dot" style="background:#e0d8ce"></div>未测试</div>
+        </div>
+      </div>
+      <div id="km-tree">${renderKMTree()}</div>
+    </div>
+  `;
+}
+
+function selectClassOverview() {
+  currentStudent = null;
+  window._studentDetailTab = 'info';
+  document.querySelectorAll('.student-item').forEach(el => el.classList.remove('active'));
+  document.getElementById('student-detail').innerHTML = renderClassOverviewDetail();
+}
+
+function selectStudent(id) {
+  currentStudent = mockData.students.find(s => s.id === id);
+  window._studentDetailTab = window._studentDetailTab || 'info';
+  document.getElementById('student-detail').innerHTML = renderStudentDetail(currentStudent);
+  document.querySelectorAll('.student-item').forEach(el => el.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+}
+
+function filterStudents(val) {
+  const filtered = mockData.students.filter(s => s.name.includes(val));
+  document.getElementById('student-list-items').innerHTML = renderStudentListItems(filtered);
+}
+
+function filterByStatus(status) {
+  const filtered = status ? mockData.students.filter(s => s.status === status) : mockData.students;
+  document.getElementById('student-list-items').innerHTML = renderStudentListItems(filtered);
+}
+
+
+// ============================================================
+// KNOWLEDGE MAP
+// ============================================================
+
+// Per-student node status: { nodeId: 'mastered'|'weak'|'partial'|'untested' }
+const studentNodeStatus = {
+  1: { 'frac-concept':'partial','frac-add':'weak','frac-app':'weak','frac-compare':'partial','int-add-multi':'mastered','int-add-carry':'mastered','mul-vertical':'mastered','div-basic':'mastered','div-remainder':'mastered','div-vertical':'partial','length-basic':'mastered','length-km':'partial','weight-basic':'weak','time-calc':'partial','area':'partial','area-formula':'untested','wp-model':'weak','wp-2step-basic':'partial' },
+  2: { 'mul-table':'mastered','mul-vertical':'partial','div-basic':'mastered','div-remainder':'mastered','wp-add':'mastered','wp-mul':'mastered','wp-2step-basic':'partial','wp-model':'weak','int-add-multi':'mastered','frac-concept':'untested','area':'partial','perimeter':'mastered' },
+  3: { 'time-clock':'mastered','time-calc':'partial','time-cross':'weak','int-add-multi':'mastered','mul-table':'mastered','mul-vertical':'mastered','div-basic':'mastered','frac-concept':'untested','area':'partial','perimeter':'mastered' },
+  4: { 'int-add-basic':'mastered','int-add-carry':'mastered','int-add-multi':'mastered','mul-table':'mastered','mul-vertical':'mastered','div-basic':'mastered','div-remainder':'mastered','div-vertical':'mastered','frac-concept':'mastered','frac-compare':'mastered','frac-add':'mastered','frac-app':'partial','dec-concept':'mastered','dec-add':'mastered','length-basic':'mastered','weight-basic':'mastered','time-calc':'mastered','perimeter':'mastered','area':'mastered','area-formula':'mastered','wp-add':'mastered','wp-mul':'mastered','wp-2step-basic':'mastered','wp-model':'mastered' },
+  5: { 'int-add-basic':'mastered','int-add-carry':'partial','mul-table':'partial','mul-vertical':'untested','div-basic':'weak','div-remainder':'weak','div-vertical':'weak','frac-concept':'untested','area':'untested','perimeter':'partial','wp-add':'partial','wp-mul':'weak','wp-2step-basic':'untested','wp-model':'weak' },
+  6: { 'int-add-multi':'mastered','mul-table':'mastered','mul-vertical':'mastered','div-basic':'mastered','frac-concept':'partial','perimeter':'partial','area':'weak','area-formula':'weak','shape-basic':'mastered','solid-basic':'partial','wp-add':'mastered','wp-mul':'mastered','wp-2step-basic':'partial','wp-model':'partial' },
+  7: { 'int-add-multi':'mastered','mul-table':'mastered','mul-vertical':'mastered','div-basic':'mastered','dec-concept':'mastered','dec-add':'partial','length-basic':'mastered','weight-basic':'mastered','time-calc':'mastered','perimeter':'mastered','area':'mastered','wp-add':'mastered','wp-mul':'mastered' },
+  8: { 'int-add-multi':'mastered','mul-table':'mastered','mul-vertical':'mastered','div-basic':'mastered','div-remainder':'mastered','frac-concept':'mastered','frac-add':'mastered','dec-add':'mastered','length-basic':'mastered','weight-basic':'mastered','time-calc':'mastered','perimeter':'mastered','area':'mastered','area-formula':'mastered','wp-add':'mastered','wp-mul':'mastered','wp-2step-basic':'mastered','wp-model':'mastered' }
+};
+
+function renderKnowledgeMap() {
+  document.getElementById('tab-knowledgemap').innerHTML = `
+    <div class="km-layout">
+      <div class="km-sidebar">
+        <div class="card" style="padding:14px">
+          <div class="card-title" style="margin-bottom:12px">选择学生</div>
+          <div class="km-student-card ${kmSelectedStudent === null ? 'active' : ''}" onclick="selectKMStudent(null)">
+            <div class="km-student-name">📊 班级总览</div>
+            <div class="text-muted text-sm">查看全班薄弱点分布</div>
+          </div>
+          ${mockData.students.map(s => `
+            <div class="km-student-card ${kmSelectedStudent === s.id ? 'active' : ''}" onclick="selectKMStudent(${s.id})">
+              <div class="flex items-center gap-8 mb-6">
+                ${avatarHtml(s, 26)}
+                <div class="km-student-name" style="margin:0">${s.name}</div>
+                ${statusLabel(s.status)}
+              </div>
+              <div class="km-student-weak">
+                ${s.weakPoints.slice(0,3).map(w => `<span class="tag weak" style="font-size:11px;padding:2px 7px">${w}</span>`).join('')}
+                ${s.weakPoints.length === 0 ? '<span class="text-muted text-sm">暂无薄弱点</span>' : ''}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+      <div class="km-main">
+        <div class="km-action-bar">
+          <div class="km-legend">
+            <div class="km-legend-item"><div class="km-legend-dot" style="background:var(--green)"></div>已掌握</div>
+            <div class="km-legend-item"><div class="km-legend-dot" style="background:var(--orange)"></div>部分掌握</div>
+            <div class="km-legend-item"><div class="km-legend-dot" style="background:var(--red)"></div>薄弱</div>
+            <div class="km-legend-item"><div class="km-legend-dot" style="background:#e0d8ce"></div>未测试</div>
+          </div>
+          <div style="margin-left:auto">
+            ${kmSelectedStudent ? `<button class="btn btn-primary btn-sm" onclick="goToStudent(${kmSelectedStudent}, true)">针对薄弱点出题</button>` : ''}
+          </div>
+        </div>
+        <div id="km-tree">
+          ${renderKMTree()}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderKMTree() {
+  return mockData.knowledgeTree.map((domain, di) => {
+    const allNodes = getAllNodes(domain);
+    const weakCount = allNodes.filter(n => getNodeStatus(n.id) === 'weak').length;
+    const masteredCount = allNodes.filter(n => getNodeStatus(n.id) === 'mastered').length;
+    const isOpen = di === 0 || weakCount > 0;
+    return `
+      <div class="km-domain">
+        <div class="km-domain-header" onclick="toggleDomain(this)">
+          <span class="km-domain-icon">${domain.icon}</span>
+          <span class="km-domain-label">${domain.label}</span>
+          ${weakCount > 0 ? `<span class="pill red" style="font-size:11px">${weakCount} 个薄弱</span>` : ''}
+          <span class="km-domain-stats">${masteredCount}/${allNodes.length} 已掌握</span>
+          <span class="km-domain-toggle ${isOpen ? 'open' : ''}">▶</span>
+        </div>
+        <div class="km-domain-body ${isOpen ? 'open' : ''}">
+          ${domain.children.map(cat => `
+            <div class="km-category">
+              <div class="km-category-label">${cat.label}</div>
+              <div class="km-nodes">
+                ${cat.children.map(node => renderKMNode(node)).join('')}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function getAllNodes(domain) {
+  const nodes = [];
+  domain.children.forEach(cat => cat.children.forEach(n => nodes.push(n)));
+  return nodes;
+}
+
+function getNodeStatus(nodeId) {
+  if (kmSelectedStudent === null) {
+    // Class view: show worst status across all students
+    const statuses = mockData.students.map(s => (studentNodeStatus[s.id] || {})[nodeId] || 'untested');
+    if (statuses.includes('weak')) return 'weak';
+    if (statuses.includes('partial')) return 'partial';
+    if (statuses.every(s => s === 'mastered')) return 'mastered';
+    return 'untested';
+  }
+  return (studentNodeStatus[kmSelectedStudent] || {})[nodeId] || 'untested';
+}
+
+function getNodeStudentCount(nodeId, status) {
+  return mockData.students.filter(s => ((studentNodeStatus[s.id] || {})[nodeId] || 'untested') === status).length;
+}
+
+function renderKMNode(node) {
+  const status = getNodeStatus(node.id);
+  const statusLabel = { mastered: '已掌握', partial: '部分掌握', weak: '薄弱', untested: '未测试' };
+  let tooltip = '';
+  if (kmSelectedStudent === null) {
+    const weakStudents = mockData.students.filter(s => ((studentNodeStatus[s.id] || {})[node.id] || 'untested') === 'weak').map(s => s.name);
+    tooltip = weakStudents.length > 0 ? `薄弱：${weakStudents.join('、')}` : statusLabel[status];
+  } else {
+    tooltip = statusLabel[status];
+  }
+  return `
+    <div class="km-node ${status}" onclick="kmNodeClick('${node.id}', '${node.label}')">
+      <div class="km-node-dot"></div>
+      ${node.label}
+      ${kmSelectedStudent === null && status === 'weak' ? `<span class="km-node-count">(${getNodeStudentCount(node.id, 'weak')}人)</span>` : ''}
+      <div class="km-node-tooltip">${tooltip}</div>
+    </div>
+  `;
+}
+
+function toggleDomain(header) {
+  const body = header.nextElementSibling;
+  const toggle = header.querySelector('.km-domain-toggle');
+  body.classList.toggle('open');
+  toggle.classList.toggle('open');
+}
+
+function selectKMStudent(id) {
+  kmSelectedStudent = id;
+  renderKnowledgeMap();
+}
+
+function kmNodeClick(nodeId, nodeLabel) {
+  if (kmSelectedStudent) {
+    const current = (studentNodeStatus[kmSelectedStudent] || {})[nodeId] || 'untested';
+    const cycle = { untested: 'partial', partial: 'mastered', mastered: 'weak', weak: 'untested' };
+    if (!studentNodeStatus[kmSelectedStudent]) studentNodeStatus[kmSelectedStudent] = {};
+    studentNodeStatus[kmSelectedStudent][nodeId] = cycle[current];
+    // Sync back to student weakPoints
+    syncWeakPoints(kmSelectedStudent);
+    document.getElementById('km-tree').innerHTML = renderKMTree();
+    showToast(`${nodeLabel} → ${['untested','partial','mastered','weak'].includes(cycle[current]) ? {untested:'未测试',partial:'部分掌握',mastered:'已掌握',weak:'薄弱'}[cycle[current]] : ''}`);
+  }
+}
+
+function syncWeakPoints(studentId) {
+  const s = mockData.students.find(st => st.id === studentId);
+  if (!s) return;
+  const nodeStatus = studentNodeStatus[studentId] || {};
+  const weakNodes = [];
+  mockData.knowledgeTree.forEach(domain => {
+    domain.children.forEach(cat => {
+      cat.children.forEach(node => {
+        if (nodeStatus[node.id] === 'weak') weakNodes.push(node.label);
+      });
+    });
+  });
+  s.weakPoints = weakNodes;
+  api.put('/students/' + studentId, { weakPoints: weakNodes });
+}
+
+
+// ============================================================
+// STUDENT INLINE HELPERS (record + feedback)
+// ============================================================
+function saveInlineRecord(id) {
+  const val = document.getElementById('inline-record-' + id).value.trim();
+  if (!val) { showToast('请先输入记录内容'); return; }
+  const s = mockData.students.find(st => st.id === id);
+  s.lastRecord = new Date().toISOString().slice(0,10);
+  s.suggestion = val;
+  api.put('/students/' + id, { lastRecord: s.lastRecord, suggestion: val });
+  document.getElementById('inline-record-' + id).value = '';
+  showToast('记录已保存');
+  window._studentDetailTab = 'info';
+  document.getElementById('student-detail').innerHTML = renderStudentDetail(s);
+}
+
+function showFeedbackPanel(id) {
+  const panel = document.getElementById('feedback-panel-' + id);
+  if (panel) panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+}
+
+function genInlineFeedback(id) {
+  const btn = document.getElementById('gen-feedback-btn-' + id);
+  if (btn) { btn.disabled = true; btn.innerHTML = '<div class="spinner" style="display:inline-block"></div> 生成中...'; }
+  setTimeout(() => {
+    const s = mockData.students.find(st => st.id === id);
+    const text = `您好！${s.name}本周在${s.weakPoints[0] || '数学'}方面${s.status==='high-risk'?'仍有困难，需要重点练习':'有所进步'}。${s.weakPoints.length ? '主要薄弱点：' + s.weakPoints.join('、') + '。' : ''}下次课将针对性出题巩固。如有问题欢迎随时沟通。`;
+    mockData.feedbackDrafts[id] = { status: 'draft', text };
+    document.getElementById('student-detail').innerHTML = renderStudentDetail(s);
+    document.getElementById('feedback-panel-' + id).style.display = 'block';
+    showToast('反馈草稿已生成');
+  }, 1200);
+}
+
+function copyInlineFeedback(id) {
+  const el = document.getElementById('feedback-text-' + id);
+  if (el) navigator.clipboard.writeText(el.value).then(() => showToast('已复制到剪贴板'));
+}
+// ============================================================
+// QUESTIONS (QUESTION BANK)
+// ============================================================
+function renderQuestions() {
+  const ocr = kanbanData['pending-ocr'];
+  const review = kanbanData['pending-review'];
+  const approved = kanbanData['approved'];
+
+  document.getElementById('tab-questions').innerHTML = `
+    <div class="mb-20">
+      <div class="upload-zone" id="q-upload-zone" onclick="qTriggerUpload()">
+        <div class="upload-icon" id="q-upload-icon">📤</div>
+        <div class="upload-text" id="q-upload-text">上传题目</div>
+        <div class="upload-sub">支持图片、PDF、Excel、Word、Markdown · 点击或拖拽上传</div>
+      </div>
+      <input type="file" id="q-file-input" multiple accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.xlsx,.xls,.csv,.docx,.doc,.md,.txt" style="display:none" onchange="qHandleFiles(this.files)">
+    </div>
+    <div class="kanban">
+      <div class="kanban-col">
+        <div class="kanban-col-header">
+          <span>待识别</span>
+          <span class="kanban-count">${ocr.length}</span>
+        </div>
+        <div id="kanban-ocr">
+          ${ocr.map(q => kanbanCardHtml(q, 'ocr')).join('')}
+          ${ocr.length === 0 ? '<div class="empty-state" style="padding:24px"><div class="empty-text">暂无待识别题目</div></div>' : ''}
+        </div>
+      </div>
+      <div class="kanban-col">
+        <div class="kanban-col-header">
+          <span>待审核</span>
+          <span class="kanban-count">${review.length}</span>
+        </div>
+        <div id="kanban-review">
+          ${review.map(q => kanbanCardHtml(q, 'review')).join('')}
+          ${review.length === 0 ? '<div class="empty-state" style="padding:24px"><div class="empty-text">暂无待审核题目</div></div>' : ''}
+        </div>
+      </div>
+      <div class="kanban-col">
+        <div class="kanban-col-header">
+          <span>已入库</span>
+          <span class="kanban-count">${approved.length}</span>
+        </div>
+        <div id="kanban-approved">
+          ${approved.map(q => kanbanCardHtml(q, 'approved')).join('')}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function kanbanCardHtml(q, stage) {
+  const diffColor = { '基础': 'ok', '提升': 'medium', '挑战': 'weak' };
+  return `
+    <div class="kanban-card">
+      <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:6px">
+        <div class="kanban-card-title" style="flex:1;margin:0">${q.content}</div>
+        <button onclick="deleteQuestion(${q.id})" title="删除" style="border:none;background:none;cursor:pointer;color:var(--muted);font-size:16px;padding:0;line-height:1;flex-shrink:0" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--muted)'">×</button>
+      </div>
+      <div class="kanban-card-meta">答案：${q.answer}</div>
+      <div class="kanban-card-tags">
+        <span class="tag neutral">${q.knowledgePoint}</span>
+        <span class="tag ${diffColor[q.difficulty]||'neutral'}">${q.difficulty}</span>
+        <span class="tag neutral">${q.type}</span>
+      </div>
+      ${stage === 'ocr' ? `<button class="btn btn-secondary btn-sm w-full" onclick="moveToReview(${q.id})">AI 识别完成 →</button>` : ''}
+      ${stage === 'review' ? `<button class="btn btn-primary btn-sm w-full" onclick="approveQuestion(${q.id})">✓ 审核通过入库</button>` : ''}
+      ${stage === 'approved' ? `<span class="pill green" style="font-size:11px">✓ 已入库</span>` : ''}
+    </div>
+  `;
+  qInitDragDrop();
+}
+
+function qInitDragDrop() {
+  const zone = document.getElementById('q-upload-zone');
+  if (!zone) return;
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.style.borderColor = 'var(--green)'; zone.style.background = 'var(--green-light)'; });
+  zone.addEventListener('dragleave', () => { zone.style.borderColor = ''; zone.style.background = ''; });
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.style.borderColor = ''; zone.style.background = '';
+    qHandleFiles(e.dataTransfer.files);
+  });
+}
+
+function qTriggerUpload() {
+  document.getElementById('q-file-input').click();
+}
+
+async function qHandleFiles(files) {
+  if (!files || files.length === 0) return;
+  const zone = document.getElementById('q-upload-zone');
+  const icon = document.getElementById('q-upload-icon');
+  const text = document.getElementById('q-upload-text');
+
+  zone.style.pointerEvents = 'none';
+  icon.textContent = '⏳';
+  text.textContent = `AI 识别中（${files.length} 个文件）…`;
+
+  const formData = new FormData();
+  for (const f of files) formData.append('files', f);
+
+  try {
+    const resp = await fetch('http://localhost:3001/api/upload', { method: 'POST', body: formData });
+    const data = await resp.json();
+
+    let total = 0;
+    let errFiles = [];
+    (data.results || []).forEach(r => {
+      if (r.error) {
+        errFiles.push(r.file);
+      } else {
+        r.questions.forEach(q => {
+          kanbanData['pending-ocr'].push({
+            id: q.id, content: q.content, type: q.type,
+            difficulty: q.difficulty, knowledgePoint: q.knowledgePoint,
+            answer: q.answer, status: 'pending-ocr'
+          });
+        });
+        total += r.count;
+      }
+    });
+
+    if (total > 0) showToast(`成功识别 ${total} 道题目，已加入待识别队列`);
+    if (errFiles.length > 0) showToast(`${errFiles.join('、')} 识别失败，请重试`);
+  } catch (e) {
+    showToast('上传失败：' + e.message);
+  } finally {
+    icon.textContent = '📤';
+    text.textContent = '上传题目';
+    zone.style.pointerEvents = '';
+    document.getElementById('q-file-input').value = '';
+    renderQuestions();
+  }
+}
+
+function moveToReview(id) {
+  const q = kanbanData['pending-ocr'].find(q => q.id === id);
+  if (!q) return;
+  kanbanData['pending-ocr'] = kanbanData['pending-ocr'].filter(q => q.id !== id);
+  q.status = 'pending-review';
+  kanbanData['pending-review'].push(q);
+  api.put('/questions/' + id, { status: 'pending-review' });
+  renderQuestions();
+  showToast('已移至待审核');
+}
+
+function approveQuestion(id) {
+  const q = kanbanData['pending-review'].find(q => q.id === id);
+  if (!q) return;
+  kanbanData['pending-review'] = kanbanData['pending-review'].filter(q => q.id !== id);
+  q.status = 'approved';
+  kanbanData['approved'].push(q);
+  mockData.questions = [...kanbanData['pending-ocr'], ...kanbanData['pending-review'], ...kanbanData['approved']];
+  api.put('/questions/' + id, { status: 'approved' });
+  renderQuestions();
+  showToast('题目已入库');
+}
+
+function deleteQuestion(id) {
+  ['pending-ocr', 'pending-review', 'approved'].forEach(col => {
+    kanbanData[col] = kanbanData[col].filter(q => q.id !== id);
+  });
+  mockData.questions = mockData.questions.filter(q => q.id !== id);
+  api.delete('/questions/' + id);
+  renderQuestions();
+  showToast('已删除');
+}
+
+// ============================================================
+// HOMEWORK
+// ============================================================
+function renderHomework() {
+  document.getElementById('tab-homework').innerHTML = `
+    <div class="grid-2">
+      <div>
+        <div class="card mb-20">
+          <div class="card-title">生成个性化作业</div>
+          <div class="mb-16">
+            <div class="note-label" style="margin-bottom:8px">选择学生</div>
+            <select id="hw-student" style="width:100%" onchange="updateHWStudent()">
+              ${mockData.students.map(s => `<option value="${s.id}" ${s.id===currentStudent.id?'selected':''}>${s.name}</option>`).join('')}
+            </select>
+          </div>
+          <div class="mb-16" id="hw-weak-points">
+            ${renderHWWeakPoints(currentStudent)}
+          </div>
+          <div class="mb-16">
+            <div class="note-label" style="margin-bottom:8px">难度配比</div>
+            <div class="flex gap-8">
+              <button class="btn btn-secondary btn-sm hw-diff active-diff" onclick="selectDiff(this,'基础')">基础 60%</button>
+              <button class="btn btn-secondary btn-sm hw-diff" onclick="selectDiff(this,'提升')">提升 30%</button>
+              <button class="btn btn-secondary btn-sm hw-diff" onclick="selectDiff(this,'挑战')">挑战 10%</button>
+            </div>
+          </div>
+          <div class="mb-16">
+            <div class="note-label" style="margin-bottom:8px">题目数量</div>
+            <div class="flex gap-8">
+              <button class="btn btn-secondary btn-sm hw-count active-count" onclick="selectCount(this,5)">5题</button>
+              <button class="btn btn-secondary btn-sm hw-count" onclick="selectCount(this,8)">8题</button>
+              <button class="btn btn-secondary btn-sm hw-count" onclick="selectCount(this,10)">10题</button>
+            </div>
+          </div>
+          <button class="btn btn-primary w-full" onclick="generateHomework()">✨ 生成作业</button>
+        </div>
+      </div>
+      <div id="hw-preview">
+        <div class="empty-state">
+          <div class="empty-icon">📄</div>
+          <div class="empty-text">点击"生成作业"预览试卷</div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderHWWeakPoints(s) {
+  return `
+    <div class="note-label" style="margin-bottom:8px">针对薄弱点</div>
+    <div>${s.weakPoints.length ? s.weakPoints.map(w => `<span class="tag weak">${w}</span>`).join('') : '<span class="tag ok">无明显薄弱点，综合练习</span>'}</div>
+  `;
+}
+
+function updateHWStudent() {
+  const id = parseInt(document.getElementById('hw-student').value);
+  currentStudent = mockData.students.find(s => s.id === id);
+  document.getElementById('hw-weak-points').innerHTML = renderHWWeakPoints(currentStudent);
+}
+
+function selectDiff(btn, diff) {
+  document.querySelectorAll('.hw-diff').forEach(b => b.classList.remove('active-diff'));
+  btn.classList.add('active-diff');
+  btn.style.background = 'var(--green)';
+  btn.style.color = 'white';
+  document.querySelectorAll('.hw-diff:not(.active-diff)').forEach(b => { b.style.background=''; b.style.color=''; });
+}
+
+function selectCount(btn, n) {
+  document.querySelectorAll('.hw-count').forEach(b => { b.classList.remove('active-count'); b.style.background=''; b.style.color=''; });
+  btn.classList.add('active-count');
+  btn.style.background = 'var(--green)';
+  btn.style.color = 'white';
+}
+
+function generateHomework() {
+  const btn = event.currentTarget;
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> 生成中...';
+  setTimeout(() => {
+    btn.disabled = false;
+    btn.innerHTML = '✨ 生成作业';
+    const s = currentStudent;
+    const questions = [
+      { n:1, content: `计算：3/4 + 1/4 = ？`, type: '计算题' },
+      { n:2, content: `小明有苹果24个，分给6个小朋友，每人分几个？`, type: '应用题' },
+      { n:3, content: `一个长方形长8厘米，宽5厘米，求面积。`, type: '计算题' },
+      { n:4, content: `火车上午8:30出发，行驶了3小时45分钟，几点到达？`, type: '应用题' },
+      { n:5, content: `计算：125 × 8 = ？（用简便方法）`, type: '计算题' },
+    ];
+    document.getElementById('hw-preview').innerHTML = `
+      <div>
+        <div class="worksheet" id="worksheet-print">
+          <div class="worksheet-header">
+            <div class="worksheet-title">三年级数学个性化练习</div>
+            <div class="worksheet-info">
+              <span>姓名：${s.name}　　</span>
+              <span>日期：2026年5月30日　　</span>
+              <span>得分：______</span>
+            </div>
+          </div>
+          ${questions.map(q => `
+            <div class="worksheet-q">
+              <div><span class="worksheet-q-num">${q.n}.</span>${q.content}</div>
+              <div class="worksheet-line"></div>
+              ${q.type==='应用题' ? '<div class="worksheet-line"></div>' : ''}
+            </div>
+          `).join('')}
+        </div>
+        <div class="flex gap-12 no-print" style="margin-top:16px">
+          <button class="btn btn-primary" onclick="window.print()">🖨️ 打印 / 导出PDF</button>
+          <button class="btn btn-secondary" onclick="showToast('已保存到作业记录')">💾 保存记录</button>
+        </div>
+      </div>
+    `;
+    showToast('作业生成完成');
+  }, 1500);
+}
+
+// ============================================================
+// MISTAKES
+// ============================================================
+// 错题分析：学生当前批改会话状态
+let mistakeSession = {
+  studentId: null,
+  photoUrl: null,       // base64 预览
+  ocrItems: [],         // [{id, content}] OCR 识别出的题目
+  wrongIds: new Set(),  // 老师勾选的错题 id
+  analyzing: false,
+  analysis: null,       // {weakPoints, errorCauses, diagnosis, suggestion, fallback}
+  saved: false
+};
+
+// ============================================================
+// AGENT (接入 Agent)
+// ============================================================
+const agentPlatforms = [
+  { id: 'feishu', name: '飞书', icon: '📩', color: 'blue', desc: '家长在飞书内与 AI 对话，发作业照片、收反馈、问进度', status: 'pending', statusLabel: '待配置', features: ['消息接收', '图片识别', '主动推送'] },
+  { id: 'wecom', name: '企业微信', icon: '💼', color: 'green', desc: '通过企业微信群接入家长，机构管理更规范', status: 'planned', statusLabel: '规划中', features: ['消息接收', '主动推送'] },
+  { id: 'dingtalk', name: '钉钉', icon: '🔔', color: 'orange', desc: '钉钉群机器人接入，适合已用钉钉的机构', status: 'planned', statusLabel: '规划中', features: ['消息接收', '主动推送'] },
+  { id: 'web', name: 'Web 嵌入', icon: '🌐', color: 'gray', desc: '将聊天小窗嵌入机构官网或 H5 页面', status: 'planned', statusLabel: '规划中', features: ['消息接收', '图片上传'] }
+];
+
+const agentBoundGroups = [
+  { id: 1, platform: 'feishu', name: '三年级2班·家长群', students: 12, lastActive: '—', enabled: false },
+  { id: 2, platform: 'feishu', name: '三年级3班·家长群', students: 8, lastActive: '—', enabled: false }
+];
+
+const agentMessageLog = []; // 占位，等待真实接入后填入
+
+function renderAgent() {
+  document.getElementById('tab-agent').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 380px;gap:20px;align-items:start">
+      <!-- 左侧：接入平台 + 家长群 + 日志 -->
+      <div>
+        <!-- 接入平台 -->
+        <div class="card mb-20">
+          <div class="card-title">接入平台</div>
+          <div class="card-sub">连接外部 IM 平台，让家长在熟悉的环境里和 AI 助教对话</div>
+          <div style="display:grid;grid-template-columns:repeat(2, 1fr);gap:12px">
+            ${agentPlatforms.map(p => `
+              <div style="border:1px solid var(--line);border-radius:14px;padding:16px;background:var(--bg)">
+                <div class="flex items-center gap-12 mb-8">
+                  <div style="font-size:28px">${p.icon}</div>
+                  <div style="flex:1">
+                    <div style="font-size:15px;font-weight:700">${p.name}</div>
+                    <div class="text-muted text-sm">${p.features.join(' · ')}</div>
+                  </div>
+                  <span class="pill ${p.status==='pending'?'orange':p.status==='active'?'green':'gray'}">${p.statusLabel}</span>
+                </div>
+                <div class="text-sm text-muted" style="margin-bottom:12px;line-height:1.55">${p.desc}</div>
+                <div class="flex gap-8">
+                  ${p.status === 'pending' ? `<button class="btn btn-primary btn-sm" onclick="agentConfigure('${p.id}')">配置接入</button>` : ''}
+                  ${p.status === 'active' ? `<button class="btn btn-secondary btn-sm" onclick="agentConfigure('${p.id}')">查看配置</button><button class="btn btn-secondary btn-sm" onclick="agentDisconnect('${p.id}')">断开</button>` : ''}
+                  ${p.status === 'planned' ? `<button class="btn btn-secondary btn-sm" disabled style="opacity:0.55">敬请期待</button>` : ''}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+
+        <!-- 家长群绑定 -->
+        <div class="card mb-20">
+          <div class="flex items-center" style="margin-bottom:14px">
+            <div class="card-title" style="margin:0;flex:1">家长群绑定</div>
+            <button class="btn btn-secondary btn-sm" onclick="agentAddGroup()">+ 绑定群组</button>
+          </div>
+          ${agentBoundGroups.length ? `
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>平台</th><th>群组名</th><th>学生数</th><th>最近活跃</th><th>状态</th><th></th>
+                </tr>
+              </thead>
+              <tbody>
+                ${agentBoundGroups.map(g => `
+                  <tr>
+                    <td>${(agentPlatforms.find(p=>p.id===g.platform)||{}).icon||''} ${(agentPlatforms.find(p=>p.id===g.platform)||{}).name||g.platform}</td>
+                    <td><strong>${g.name}</strong></td>
+                    <td>${g.students}</td>
+                    <td class="text-muted">${g.lastActive}</td>
+                    <td>${g.enabled ? '<span class="pill green">已启用</span>' : '<span class="pill gray">已暂停</span>'}</td>
+                    <td><a onclick="agentToggleGroup(${g.id})">${g.enabled ? '暂停' : '启用'}</a></td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          ` : `
+            <div class="empty-state" style="padding:30px">
+              <div class="empty-icon">👨‍👩‍👦</div>
+              <div class="empty-text">尚未绑定家长群</div>
+            </div>
+          `}
+        </div>
+
+        <!-- 消息日志 -->
+        <div class="card">
+          <div class="flex items-center" style="margin-bottom:14px">
+            <div class="card-title" style="margin:0;flex:1">最近消息</div>
+            <button class="btn btn-secondary btn-sm" onclick="showToast('日志将在接入后展示')">查看全部</button>
+          </div>
+          ${agentMessageLog.length === 0 ? `
+            <div class="empty-state" style="padding:36px">
+              <div class="empty-icon">💬</div>
+              <div class="empty-text">暂无消息</div>
+              <div class="text-muted text-sm" style="margin-top:6px">接入平台后，家长发来的消息和 AI 回复会显示在这里</div>
+            </div>
+          ` : ''}
+        </div>
+      </div>
+
+      <!-- 右侧：能力开关 + 接入指南 -->
+      <div>
+        <div class="card mb-20">
+          <div class="card-title">AI 助教能力</div>
+          <div class="card-sub">开启后，家长可以使用对应能力</div>
+          ${[
+            ['作业照片识别', '家长发来作业照片，AI 自动批改并记录错题', true],
+            ['进度查询', '家长问"孩子最近怎么样"，AI 结合档案回答', true],
+            ['主动反馈推送', '每周自动推送学情简报', false],
+            ['题目解答', '家长发来不会的题，AI 给出讲解思路', false]
+          ].map(([name, desc, on]) => `
+            <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)">
+              <div style="flex:1">
+                <div style="font-size:14px;font-weight:600;margin-bottom:2px">${name}</div>
+                <div class="text-muted text-sm" style="line-height:1.5">${desc}</div>
+              </div>
+              <label style="position:relative;display:inline-block;width:38px;height:22px;flex-shrink:0;margin-top:2px">
+                <input type="checkbox" ${on?'checked':''} onchange="showToast('已${on?'关闭':'开启'}：${name}')" style="opacity:0;width:0;height:0">
+                <span style="position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:${on?'var(--green)':'#d8d2c5'};border-radius:22px;transition:.2s"></span>
+                <span style="position:absolute;height:18px;width:18px;left:${on?'18px':'2px'};top:2px;background:white;border-radius:50%;transition:.2s"></span>
+              </label>
+            </div>
+          `).join('')}
+        </div>
+
+        <div class="card">
+          <div class="card-title">接入指南</div>
+          <ol style="padding-left:18px;font-size:13px;line-height:1.9;color:var(--text)">
+            <li>在飞书开放平台创建企业自建应用</li>
+            <li>填入 App ID 和 App Secret</li>
+            <li>把回调 URL <code style="background:var(--bg);padding:2px 6px;border-radius:4px;font-size:12px">https://你的域名/api/feishu/webhook</code> 配置到飞书</li>
+            <li>把机器人加入家长群，回到本页绑定群组</li>
+          </ol>
+          <div style="margin-top:12px"><button class="btn btn-secondary btn-sm" onclick="showToast('完整文档将在飞书 App ID 配置完成后开放')">查看完整文档</button></div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function agentConfigure(platformId) {
+  const p = agentPlatforms.find(x => x.id === platformId);
+  if (!p) return;
+  showToast(`${p.name} 配置面板将在 App ID 拿到后开放`);
+}
+
+function agentDisconnect(platformId) {
+  showToast('已断开（占位）');
+}
+
+function agentAddGroup() {
+  showToast('绑定群组功能将在飞书接入后开放');
+}
+
+function agentToggleGroup(id) {
+  const g = agentBoundGroups.find(x => x.id === id);
+  if (!g) return;
+  g.enabled = !g.enabled;
+  renderAgent();
+  showToast(g.enabled ? '群组已启用' : '群组已暂停');
+}
+
+function renderMistakes() {
+  if (!currentStudent) currentStudent = mockData.students[0];
+  const s = currentStudent;
+  const sess = mistakeSession;
+  // 切换学生时重置会话
+  if (sess.studentId !== s.id) {
+    sess.studentId = s.id;
+    sess.photoUrl = null;
+    sess.ocrItems = [];
+    sess.wrongIds = new Set();
+    sess.analysis = null;
+    sess.saved = false;
+  }
+
+  document.getElementById('tab-mistakes').innerHTML = `
+    <div style="display:grid;grid-template-columns:340px 1fr;gap:20px;align-items:start">
+
+      <!-- 左列：选学生 + 上传照片 + 历史薄弱点 -->
+      <div>
+        <div class="card mb-20">
+          <div class="card-title">作业错题分析</div>
+          <div class="card-sub">上传作业照片 → AI 识别题目 → 你勾选错题 → AI 分析薄弱点</div>
+
+          <div class="flex items-center gap-12 mb-16">
+            <span class="text-sm text-muted" style="white-space:nowrap">学生：</span>
+            <select id="mistake-student" style="flex:1" onchange="mistakeChangeStudent()">
+              ${mockData.students.map(st => `<option value="${st.id}" ${st.id===s.id?'selected':''}>${st.name}</option>`).join('')}
+            </select>
+          </div>
+
+          <div id="mistake-upload-zone" class="upload-zone" onclick="mistakeTriggerUpload()" style="padding:24px;cursor:pointer;${sess.photoUrl?'display:none':''}">
+            <div class="upload-icon">📷</div>
+            <div class="upload-text">上传作业照片</div>
+            <div class="upload-sub">支持 JPG/PNG · AI 自动识别题目</div>
+          </div>
+          <input type="file" id="mistake-file-input" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="mistakeUploadPhoto(event)">
+
+          <div id="mistake-photo-wrap" style="${sess.photoUrl?'':'display:none;'}margin-top:12px">
+            <img id="mistake-photo" style="width:100%;border-radius:10px;border:1px solid var(--line)" src="${sess.photoUrl||''}" alt="作业照片">
+            <button class="btn btn-secondary btn-sm" style="margin-top:8px;width:100%" onclick="mistakeClearPhoto()">更换照片</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title" style="margin-bottom:10px">📍 ${s.name} · 历史薄弱点</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px">
+            ${s.weakPoints.length
+              ? s.weakPoints.map(w => `<span class="tag weak">${w}</span>`).join('')
+              : '<span class="text-muted text-sm">暂无记录</span>'}
+          </div>
+        </div>
+      </div>
+
+      <!-- 右列：识别结果 + 勾选 + 分析 -->
+      <div>
+        <div class="card" id="mistake-main">
+          ${renderMistakeMain(sess)}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderMistakeMain(sess) {
+  if (!sess.photoUrl) {
+    return `
+      <div class="empty-state" style="padding:60px">
+        <div class="empty-icon">📷</div>
+        <div class="empty-text">先上传作业照片</div>
+        <div class="text-muted text-sm" style="margin-top:8px">系统会自动识别照片里的题目，你只需勾选哪些做错了</div>
+      </div>
+    `;
+  }
+  if (sess.ocrItems.length === 0 && !sess.analyzing) {
+    return `
+      <div class="empty-state" style="padding:60px">
+        <div class="spinner" style="margin:0 auto 12px"></div>
+        <div class="empty-text">AI 正在识别题目…</div>
+      </div>
+    `;
+  }
+
+  const wrongCount = sess.wrongIds.size;
+  const totalCount = sess.ocrItems.length;
+
+  return `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div>
+        <div class="card-title" style="margin-bottom:2px">识别到的题目</div>
+        <div class="text-muted text-sm">勾选学生做错的题，未勾选的视为正确</div>
+      </div>
+      <div class="text-sm" style="color:${wrongCount>0?'var(--red)':'var(--muted)'};font-weight:600">已选 ${wrongCount}/${totalCount} 道错题</div>
+    </div>
+
+    <div id="mistake-items">
+      ${sess.ocrItems.map(item => {
+        const isWrong = sess.wrongIds.has(item.id);
+        return `
+          <div onclick="mistakeToggleWrong(${item.id})" style="border:2px solid ${isWrong?'var(--red)':'var(--line)'};background:${isWrong?'var(--red-light)':'white'};border-radius:12px;padding:14px;margin-bottom:10px;cursor:pointer;transition:all 0.15s;display:flex;align-items:flex-start;gap:12px">
+            <div style="width:24px;height:24px;border-radius:6px;border:2px solid ${isWrong?'var(--red)':'#cfc6b6'};background:${isWrong?'var(--red)':'white'};flex-shrink:0;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:14px;margin-top:1px">${isWrong?'✗':''}</div>
+            <div style="flex:1;font-size:14px;line-height:1.6">${escapeHtml(item.content)}</div>
+          </div>
+        `;
+      }).join('')}
+    </div>
+
+    <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--line);display:flex;align-items:center;gap:12px">
+      <button class="btn btn-primary" id="mistake-analyze-btn" onclick="mistakeAnalyze()" ${wrongCount===0?'disabled':''}>
+        ${sess.analyzing ? '<span class="spinner" style="display:inline-block;margin-right:6px;width:14px;height:14px;border-width:2px"></span>分析中…' : '🧠 AI 分析薄弱点'}
+      </button>
+      <span class="text-sm text-muted">${wrongCount===0?'请先勾选错题':'结合学生历史档案，分析薄弱点和错因'}</span>
+    </div>
+
+    ${sess.analysis ? renderMistakeAnalysis(sess.analysis) : ''}
+  `;
+}
+
+function renderMistakeAnalysis(a) {
+  const causes = Object.entries(a.errorCauses || {});
+  const max = Math.max(1, ...causes.map(c => c[1]));
+  return `
+    <div style="margin-top:18px;padding:16px;border:1px solid var(--green);border-radius:12px;background:var(--green-light)">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+        <span style="font-size:18px">🧠</span>
+        <span style="font-size:15px;font-weight:700;color:var(--green)">AI 分析结果</span>
+        ${a.fallback ? '<span class="pill orange" style="font-size:10px">规则版（AI 服务不可用）</span>' : '<span class="pill green" style="font-size:10px">AI 生成</span>'}
+      </div>
+
+      <div class="mb-16">
+        <div class="note-label" style="margin-bottom:6px">诊断</div>
+        <div style="font-size:14px;color:var(--text)">${escapeHtml(a.diagnosis || '')}</div>
+      </div>
+
+      <div class="mb-16">
+        <div class="note-label" style="margin-bottom:8px">本次薄弱点</div>
+        <div>${(a.weakPoints||[]).map(w => `<span class="tag weak">${escapeHtml(w)}</span>`).join('') || '<span class="text-muted text-sm">无</span>'}</div>
+      </div>
+
+      <div class="mb-16">
+        <div class="note-label" style="margin-bottom:10px">错误原因分布</div>
+        <div class="chart-bars" style="height:80px">
+          ${causes.map(([k,v]) => `
+            <div class="chart-bar-wrap">
+              <div class="chart-value">${v}%</div>
+              <div class="chart-bar ${v===max?'red':'orange'}" style="height:${Math.round(v/max*55)}px"></div>
+              <div class="chart-label">${k}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+
+      <div class="mb-16">
+        <div class="note-label" style="margin-bottom:6px">改进建议</div>
+        <div style="font-size:14px;color:var(--text)">${escapeHtml(a.suggestion || '')}</div>
+      </div>
+
+      <div style="display:flex;gap:8px;padding-top:12px;border-top:1px solid var(--line)">
+        <button class="btn btn-primary btn-sm" onclick="mistakeCommit()">✅ 确认并写入档案</button>
+        <button class="btn btn-secondary btn-sm" onclick="mistakeAnalyze()">🔄 重新分析</button>
+      </div>
+    </div>
+  `;
+}
+
+function escapeHtml(s) {
+  return String(s||'').replace(/[<>&"']/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function mistakeChangeStudent() {
+  const sid = parseInt(document.getElementById('mistake-student').value);
+  currentStudent = mockData.students.find(st => st.id === sid);
+  renderMistakes();
+}
+
+function mistakeTriggerUpload() {
+  document.getElementById('mistake-file-input').click();
+}
+
+async function mistakeUploadPhoto(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  // 预览
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    mistakeSession.photoUrl = ev.target.result;
+    document.getElementById('mistake-photo').src = ev.target.result;
+    document.getElementById('mistake-upload-zone').style.display = 'none';
+    document.getElementById('mistake-photo-wrap').style.display = 'block';
+    refreshMistakeMain();
+  };
+  reader.readAsDataURL(file);
+
+  // 上传到后端 OCR
+  mistakeSession.ocrItems = [];
+  mistakeSession.wrongIds = new Set();
+  mistakeSession.analysis = null;
+  refreshMistakeMain();
+
+  const fd = new FormData();
+  fd.append('photo', file);
+  try {
+    const resp = await fetch('http://localhost:3001/api/mistakes/ocr', { method:'POST', body: fd });
+    const data = await resp.json();
+    if (!data.ok) throw new Error(data.error || 'OCR 失败');
+    mistakeSession.ocrItems = data.items || [];
+    if (mistakeSession.ocrItems.length === 0) {
+      showToast('未识别到题目，请尝试更清晰的照片');
+    } else {
+      showToast(`识别到 ${mistakeSession.ocrItems.length} 道题目`);
+    }
+  } catch(err) {
+    showToast('识别失败：' + err.message);
+  }
+  refreshMistakeMain();
+}
+
+function mistakeClearPhoto() {
+  mistakeSession.photoUrl = null;
+  mistakeSession.ocrItems = [];
+  mistakeSession.wrongIds = new Set();
+  mistakeSession.analysis = null;
+  document.getElementById('mistake-photo').src = '';
+  document.getElementById('mistake-upload-zone').style.display = '';
+  document.getElementById('mistake-photo-wrap').style.display = 'none';
+  document.getElementById('mistake-file-input').value = '';
+  refreshMistakeMain();
+}
+
+function mistakeToggleWrong(id) {
+  if (mistakeSession.wrongIds.has(id)) mistakeSession.wrongIds.delete(id);
+  else mistakeSession.wrongIds.add(id);
+  // 勾选变化后清掉旧分析（可重新分析）
+  mistakeSession.analysis = null;
+  refreshMistakeMain();
+}
+
+async function mistakeAnalyze() {
+  const sess = mistakeSession;
+  if (sess.wrongIds.size === 0) { showToast('请先勾选错题'); return; }
+  sess.analyzing = true;
+  sess.analysis = null;
+  refreshMistakeMain();
+
+  const wrongTexts = sess.ocrItems.filter(it => sess.wrongIds.has(it.id)).map(it => it.content);
+  try {
+    const resp = await fetch('http://localhost:3001/api/mistakes/analyze', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ studentId: sess.studentId, wrongTexts })
+    });
+    const data = await resp.json();
+    if (!data.ok) throw new Error(data.error || '分析失败');
+    sess.analysis = data;
+    if (data.fallback) showToast('AI 服务暂不可用，已用规则版分析');
+  } catch(err) {
+    showToast('分析失败：' + err.message);
+  }
+  sess.analyzing = false;
+  refreshMistakeMain();
+}
+
+async function mistakeCommit() {
+  const sess = mistakeSession;
+  if (!sess.analysis) return;
+  const wrongTexts = sess.ocrItems.filter(it => sess.wrongIds.has(it.id)).map(it => it.content);
+  try {
+    const resp = await fetch('http://localhost:3001/api/mistakes/commit', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        studentId: sess.studentId,
+        weakPoints: sess.analysis.weakPoints,
+        errorCauses: sess.analysis.errorCauses,
+        wrongTexts
+      })
+    });
+    const data = await resp.json();
+    if (!data.ok) throw new Error(data.error || '保存失败');
+
+    // 同步前端学生档案
+    const s = mockData.students.find(st => st.id === sess.studentId);
+    if (s) {
+      s.weakPoints = data.weakPoints;
+      s.errorCauses = sess.analysis.errorCauses;
+      wrongTexts.forEach(t => {
+        const desc = t.length > 30 ? t.slice(0,30)+'…' : t;
+        if (!s.recentErrors.includes(desc)) s.recentErrors.unshift(desc);
+      });
+      s.recentErrors = s.recentErrors.slice(0,10);
+    }
+    sess.saved = true;
+    showToast(`✅ ${s.name} 学情档案已更新（薄弱点：${data.weakPoints.length} 个）`);
+  } catch(err) {
+    showToast('保存失败：' + err.message);
+  }
+}
+
+function refreshMistakeMain() {
+  const el = document.getElementById('mistake-main');
+  if (el) el.innerHTML = renderMistakeMain(mistakeSession);
+}
+
+// ============================================================
+// INIT
+// ============================================================
+async function seedIfEmpty(students, questions) {
+  // 首次使用：把 mock 数据写入数据库
+  if (students.length === 0) {
+    for (const s of mockData.students) {
+      await api.post('/students', {
+        name: s.name, grade: s.grade, status: s.status,
+        weakPoints: s.weakPoints, errorCauses: s.errorCauses,
+        homeworkRate: s.homeworkRate, lastRecord: s.lastRecord,
+        recentErrors: s.recentErrors, notes: s.notes, suggestion: s.suggestion
+      });
+    }
+    students = await api.get('/students');
+  }
+  if (questions.length === 0) {
+    for (const q of mockData.questions) {
+      await api.post('/questions', {
+        content: q.content, type: q.type, difficulty: q.difficulty,
+        knowledgePoint: q.knowledgePoint, answer: q.answer, status: q.status
+      });
+    }
+    questions = await api.get('/questions');
+  }
+  return { students, questions };
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+  setDate();
+  try {
+    let [students, questions] = await Promise.all([
+      api.get('/students'),
+      api.get('/questions')
+    ]);
+    ({ students, questions } = await seedIfEmpty(students, questions));
+    mockData.students = students.map(withColor);
+    mockData.questions = questions;
+    kanbanData = {
+      'pending-ocr': mockData.questions.filter(q => q.status === 'pending-ocr'),
+      'pending-review': mockData.questions.filter(q => q.status === 'pending-review'),
+      'approved': mockData.questions.filter(q => q.status === 'approved')
+    };
+    currentStudent = mockData.students[0];
+  } catch (e) {
+    console.warn('API unavailable, using mock data:', e.message);
+    currentStudent = mockData.students[0];
+    kanbanData = {
+      'pending-ocr': mockData.questions.filter(q => q.status === 'pending-ocr'),
+      'pending-review': mockData.questions.filter(q => q.status === 'pending-review'),
+      'approved': mockData.questions.filter(q => q.status === 'approved')
+    };
+  }
+  renderDashboard();
+});
+</script>
+</body>
+</html>

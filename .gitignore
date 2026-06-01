@@ -1,0 +1,7 @@
+server/.env
+server/data/
+server/node_modules/
+server/server.log
+server/server.err
+*.db
+.claude/

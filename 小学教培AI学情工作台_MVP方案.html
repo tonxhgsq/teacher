@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>小学教培 AI 学情工作台｜第一版产品思路与 MVP 路线</title>
+  <style>
+    :root {
+      --bg: #f6f4ee;
+      --paper: #fffdf8;
+      --ink: #25211b;
+      --muted: #6f685e;
+      --line: #e5ded2;
+      --accent: #9b5c2e;
+      --accent2: #2f6f5e;
+      --soft: #efe6d8;
+      --soft2: #e6f0ec;
+      --danger: #a14236;
+      --gold: #c79132;
+      --shadow: 0 18px 45px rgba(55, 43, 30, 0.10);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background:
+        radial-gradient(circle at top left, rgba(155, 92, 46, .12), transparent 34%),
+        radial-gradient(circle at 85% 5%, rgba(47, 111, 94, .12), transparent 26%),
+        var(--bg);
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+      line-height: 1.72;
+    }
+
+    .wrap {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 38px 22px 70px;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, #fffdf8 0%, #f5ecdf 100%);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      padding: 44px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      right: -80px;
+      top: -80px;
+      width: 260px;
+      height: 260px;
+      background: rgba(47, 111, 94, .12);
+      border-radius: 50%;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: var(--soft2);
+      color: var(--accent2);
+      font-weight: 700;
+      font-size: 13px;
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      font-size: clamp(34px, 5vw, 58px);
+      line-height: 1.1;
+      margin: 0 0 18px;
+      letter-spacing: -1.5px;
+    }
+
+    h2 {
+      font-size: 30px;
+      line-height: 1.25;
+      margin: 50px 0 18px;
+      letter-spacing: -0.5px;
+    }
+
+    h3 {
+      font-size: 20px;
+      margin: 26px 0 10px;
+    }
+
+    p { margin: 10px 0; }
+
+    .lead {
+      max-width: 840px;
+      font-size: 20px;
+      color: #3f372e;
+      margin-bottom: 26px;
+    }
+
+    .one-liner {
+      background: #fff;
+      border-left: 6px solid var(--accent);
+      border-radius: 18px;
+      padding: 20px 24px;
+      font-size: 22px;
+      font-weight: 800;
+      max-width: 880px;
+      margin: 24px 0 8px;
+    }
+
+    .grid {
+      display: grid;
+      gap: 18px;
+    }
+
+    .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+    .card {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 22px;
+      box-shadow: 0 10px 26px rgba(55, 43, 30, 0.06);
+    }
+
+    .card h3 {
+      margin-top: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: var(--soft);
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 800;
+      margin-right: 6px;
+      margin-bottom: 6px;
+    }
+
+    .tag.green {
+      background: var(--soft2);
+      color: var(--accent2);
+    }
+
+    .tag.red {
+      background: #f4dfdb;
+      color: var(--danger);
+    }
+
+    .muted { color: var(--muted); }
+
+    .section {
+      margin-top: 26px;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border-radius: 20px;
+      border: 1px solid var(--line);
+      background: var(--paper);
+      box-shadow: 0 10px 26px rgba(55, 43, 30, 0.05);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 760px;
+    }
+
+    th, td {
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+      text-align: left;
+    }
+
+    th {
+      background: #f2eadf;
+      color: #3f372e;
+      font-size: 14px;
+    }
+
+    tr:last-child td { border-bottom: 0; }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .flow-step {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 16px;
+      min-height: 136px;
+      position: relative;
+    }
+
+    .num {
+      display: inline-flex;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      align-items: center;
+      justify-content: center;
+      background: var(--accent);
+      color: #fff;
+      font-weight: 800;
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    .principle {
+      background: #1f2d28;
+      color: #fffdf8;
+      border-radius: 26px;
+      padding: 32px;
+      margin-top: 22px;
+    }
+
+    .principle h2, .principle h3 { color: #fff; margin-top: 0; }
+    .principle .muted { color: rgba(255,255,255,.72); }
+
+    .warning {
+      border: 1px solid #e7c0b9;
+      background: #fff7f5;
+      border-radius: 20px;
+      padding: 18px 20px;
+    }
+
+    .success {
+      border: 1px solid #bed8cf;
+      background: #f4fbf8;
+      border-radius: 20px;
+      padding: 18px 20px;
+    }
+
+    .roadmap {
+      position: relative;
+      padding-left: 22px;
+      border-left: 3px solid var(--line);
+      margin-top: 18px;
+    }
+
+    .milestone {
+      margin: 0 0 22px;
+      padding: 18px 20px;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      position: relative;
+    }
+
+    .milestone::before {
+      content: "";
+      position: absolute;
+      left: -31px;
+      top: 24px;
+      width: 15px;
+      height: 15px;
+      background: var(--accent2);
+      border-radius: 50%;
+      border: 3px solid var(--bg);
+    }
+
+    .quote {
+      font-size: 24px;
+      font-weight: 850;
+      line-height: 1.45;
+      color: var(--accent);
+    }
+
+    .small {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .toc {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 26px;
+    }
+
+    .toc a {
+      text-decoration: none;
+      color: var(--ink);
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .footer {
+      margin-top: 56px;
+      padding-top: 22px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    a { color: var(--accent2); }
+
+    @media (max-width: 980px) {
+      .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+      .flow { grid-template-columns: 1fr 1fr; }
+      .hero { padding: 28px; }
+    }
+
+    @media (max-width: 560px) {
+      .flow { grid-template-columns: 1fr; }
+      .wrap { padding: 22px 14px 50px; }
+      h2 { font-size: 25px; }
+      .one-liner { font-size: 19px; }
+    }
+
+    @media print {
+      body { background: #fff; }
+      .wrap { max-width: none; padding: 0; }
+      .hero, .card, .table-wrap, .principle, .milestone { box-shadow: none; }
+      .toc { display: none; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <header class="hero">
+      <div class="eyebrow">第一版产品方案 · 小学教培 AI 助教</div>
+      <h1>小学教培 AI 学情工作台</h1>
+      <p class="lead">
+        不做学习机，不做学生沉浸式 App。第一版产品的核心，是帮助老师在不增加学生屏幕时间的前提下，
+        看见每个学生的问题、持续跟进、生成纸质作业，并把服务过程清楚地反馈给家长。
+      </p>
+      <div class="one-liner">
+        产品定位：面向小学教培老师的 AI 学情跟进系统。
+      </div>
+      <p class="muted">
+        核心原则：AI 在后台，孩子在纸上学；AI 负责整理和建议，老师负责判断和确认。
+      </p>
+
+      <nav class="toc">
+        <a href="#position">产品定位</a>
+        <a href="#mvp">MVP 范围</a>
+        <a href="#workflow">核心闭环</a>
+        <a href="#question-bank">题库策略</a>
+        <a href="#personalization">个性化逻辑</a>
+        <a href="#input">题目录入</a>
+        <a href="#tech">技术架构</a>
+        <a href="#roadmap">开发路径</a>
+        <a href="#risk">风险与验证</a>
+      </nav>
+    </header>
+
+    <section id="position" class="section">
+      <h2>一、为什么这个产品要做“老师工作台”，而不是学生端学习产品？</h2>
+      <div class="grid grid-3">
+        <div class="card">
+          <h3>1. 避开学习机红海</h3>
+          <p>
+            学生端 AI 学习产品已经非常拥挤，大厂在题库、硬件、流量、品牌信任上都有明显优势。
+            小团队如果切“拍题答疑 + 在线刷题 + AI 讲题”，很容易被卷死。
+          </p>
+          <span class="tag red">不建议主打</span>
+          <span class="tag red">学生沉浸式学习</span>
+        </div>
+
+        <div class="card">
+          <h3>2. 真痛点在老师侧</h3>
+          <p>
+            小班老师真正痛的不是“不会讲题”，而是学生多、状态碎、错因不同、课后反馈写不动、
+            下次课容易忘记重点。工作台应该帮助老师把这些碎片变成可执行的跟进动作。
+          </p>
+          <span class="tag green">主战场</span>
+          <span class="tag green">老师工作流</span>
+        </div>
+
+        <div class="card">
+          <h3>3. 小学阶段要控制屏幕</h3>
+          <p>
+            对小学家长来说，“不让孩子多看屏幕”本身就是卖点。产品应坚持纸笔训练、家长协助上传、
+            老师复核反馈，而不是让孩子每天对着 AI 学。
+          </p>
+          <span class="tag">纸质作业</span>
+          <span class="tag">轻学生入口</span>
+        </div>
+      </div>
+
+      <div class="principle">
+        <h2>一句话产品战略</h2>
+        <p class="quote">让一个小学教培老师，像带 5 个学生一样，持续跟进 30～80 个学生。</p>
+        <p class="muted">
+          表层是 AI 助教工具，底层是学生学情操作系统。周报、错题分析、题目生成都只是入口；
+          真正要沉淀的是学生画像、错因标签、私有题库、家长沟通记录和下次教学提醒。
+        </p>
+      </div>
+    </section>
+
+    <section id="mvp" class="section">
+      <h2>二、第一版 MVP 应该做什么，不做什么？</h2>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>模块</th>
+              <th>第一版要做</th>
+              <th>第一版不做</th>
+              <th>判断依据</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>老师端 Web 工作台</strong></td>
+              <td>学生列表、学生详情、课后记录、错题分析、作业生成、家长反馈草稿</td>
+              <td>复杂教务排课、财务、招生 CRM、大型数据看板</td>
+              <td>先解决“学生跟进”这个主痛点，不把 MVP 做成机构管理系统。</td>
+            </tr>
+            <tr>
+              <td><strong>家长/学生轻入口</strong></td>
+              <td>作业拍照上传、查看/下载作业 PDF、查看老师反馈</td>
+              <td>独立学生 App、AI 聊天陪学、在线刷题社区、排行榜</td>
+              <td>小学阶段要减少屏幕依赖，把学生学习行为保留在线下纸笔中。</td>
+            </tr>
+            <tr>
+              <td><strong>题库</strong></td>
+              <td>老师上传资料，AI 拆题、打标签、沉淀私有题库</td>
+              <td>一开始自建几十万道大题库，或高成本买全量题库</td>
+              <td>小教培老师更需要把自己的资料结构化，而不是买一堆未必适配的题。</td>
+            </tr>
+            <tr>
+              <td><strong>个性化作业</strong></td>
+              <td>根据学生错因和薄弱点，从私有题库推荐题；不足时 AI 生成补充题</td>
+              <td>完全自动发作业、完全由 AI 判定学习路径</td>
+              <td>教育场景要保留老师控制权，避免 AI 误判直接影响学生。</td>
+            </tr>
+            <tr>
+              <td><strong>AI 批改/错题分析</strong></td>
+              <td>识别题目、判断错因、输出建议，老师复核</td>
+              <td>完全自动评分、自动定级、自动给家长下结论</td>
+              <td>AI 可提升效率，但小学教学反馈必须有人把关。</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="grid grid-2 section">
+        <div class="success">
+          <h3>第一版核心闭环</h3>
+          <p>
+            课后记录 → 学生档案更新 → 错题/薄弱点沉淀 → 个性化纸质作业 → 家长反馈草稿 → 下次课提醒。
+          </p>
+        </div>
+        <div class="warning">
+          <h3>第一版最大忌讳</h3>
+          <p>
+            不要把“能做的 AI 功能”全塞进去。功能多不等于产品强，老师的使用链路顺，才是第一版成败关键。
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section id="workflow" class="section">
+      <h2>三、MVP 的核心使用流程</h2>
+      <p class="muted">
+        这个流程必须足够轻。老师不能因为系统更“智能”而多干活；系统应该把老师原本分散的动作自动沉淀下来。
+      </p>
+
+      <div class="flow">
+        <div class="flow-step">
+          <div class="num">1</div>
+          <h3>课前提醒</h3>
+          <p>老师打开工作台，看到今天每个学生的薄弱点和上次遗留问题。</p>
+        </div>
+
+        <div class="flow-step">
+          <div class="num">2</div>
+          <h3>线下上课</h3>
+          <p>学生仍然听课、写纸质题，不需要长时间使用电子产品。</p>
+        </div>
+
+        <div class="flow-step">
+          <div class="num">3</div>
+          <h3>课后记录</h3>
+          <p>老师语音/文字记录 30 秒，AI 整理成学情标签和家长反馈草稿。</p>
+        </div>
+
+        <div class="flow-step">
+          <div class="num">4</div>
+          <h3>作业生成</h3>
+          <p>系统根据薄弱点，从私有题库推荐题目，生成可打印 PDF。</p>
+        </div>
+
+        <div class="flow-step">
+          <div class="num">5</div>
+          <h3>家庭上传</h3>
+          <p>学生纸笔完成，家长拍照上传。上传入口只做提交，不做沉浸式学习。</p>
+        </div>
+
+        <div class="flow-step">
+          <div class="num">6</div>
+          <h3>老师复核</h3>
+          <p>AI 分析错题和错因，老师确认后进入学生档案和下次课提醒。</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="question-bank" class="section">
+      <h2>四、题库问题：第一版不应该拼“大题库”，要做“私有题库沉淀”</h2>
+
+      <div class="grid grid-2">
+        <div class="card">
+          <h3>为什么不建议一开始买大题库？</h3>
+          <p>
+            买大题库看起来快，但容易带来三个问题：授权成本高、题目不一定符合老师教学风格、
+            系统容易变成普通题库工具。更关键的是，它无法自然沉淀老师自己的教研资产。
+          </p>
+          <p>
+            小教培老师往往不是真缺题，而是缺“把题分好类、知道给谁用、知道为什么用”的能力。
+          </p>
+        </div>
+
+        <div class="card">
+          <h3>第一版更好的题库策略</h3>
+          <p>
+            让老师上传自己已有的讲义、练习、试卷、错题照片。AI 做 OCR、拆题、标签化、难度识别，
+            老师快速确认后进入私有题库。
+          </p>
+          <p>
+            这样题库不是一次性资产，而是越用越厚的教学数据。
+          </p>
+        </div>
+      </div>
+
+      <h3>题库的三阶段路线</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>阶段</th>
+              <th>题库来源</th>
+              <th>AI 做什么</th>
+              <th>老师做什么</th>
+              <th>形成什么资产</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>阶段 1：私有资料结构化</strong></td>
+              <td>老师讲义、PDF、试卷、图片、Excel</td>
+              <td>识别题目、拆题、标注知识点、难度、题型</td>
+              <td>快速确认/修改标签</td>
+              <td>老师私有题库</td>
+            </tr>
+            <tr>
+              <td><strong>阶段 2：错题驱动扩充</strong></td>
+              <td>学生作业、错题、订正记录</td>
+              <td>归因错因、关联相似题、补充训练题</td>
+              <td>确认错因和推荐题</td>
+              <td>学生错题库 + 错因分布</td>
+            </tr>
+            <tr>
+              <td><strong>阶段 3：机构共享题库</strong></td>
+              <td>多个老师沉淀的高质量题目</td>
+              <td>去重、分层、生成组卷策略</td>
+              <td>教研负责人审核</td>
+              <td>机构级教研资产</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="success section">
+        <h3>题库策略结论</h3>
+        <p>
+          早期不要问“我们有没有十万道题”。应该问：“老师上传一道题后，我们能不能稳定地把它变成可推荐、可组卷、可追踪效果的结构化题目？”
+        </p>
+      </div>
+    </section>
+
+    <section id="personalization" class="section">
+      <h2>五、个性化定制：不是给每个孩子生成一堆新题，而是做“可解释的精准跟进”</h2>
+
+      <p>
+        个性化的核心不是炫技，而是让老师知道：这个孩子为什么要做这几道题，下次课应该怎么带。
+      </p>
+
+      <div class="grid grid-3">
+        <div class="card">
+          <h3>学生画像</h3>
+          <p>记录薄弱知识点、错因类型、作业完成情况、课堂表现、老师备注、家长沟通历史。</p>
+          <span class="tag green">长期资产</span>
+        </div>
+
+        <div class="card">
+          <h3>错因标签</h3>
+          <p>把“错了”拆成具体原因：审题、计算、概念、建模、习惯、表达、步骤跳跃等。</p>
+          <span class="tag green">核心壁垒</span>
+        </div>
+
+        <div class="card">
+          <h3>训练策略</h3>
+          <p>根据错因选择题目类型：基础巩固、同类变式、限时计算、应用题建模、订正复盘。</p>
+          <span class="tag green">教学价值</span>
+        </div>
+      </div>
+
+      <h3>小学数学错因体系示例</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>一级错因</th>
+              <th>二级标签</th>
+              <th>系统建议动作</th>
+              <th>适合的训练</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>计算类</strong></td>
+              <td>进位/退位错误、乘法口诀不熟、竖式格式错误、符号错误</td>
+              <td>不要直接加难题，先做短时高频计算训练</td>
+              <td>5～8 分钟限时计算、同类小题连续练</td>
+            </tr>
+            <tr>
+              <td><strong>审题类</strong></td>
+              <td>漏条件、关键词理解错、没看清问题、抄错数字</td>
+              <td>训练圈画关键词和复述题意</td>
+              <td>应用题读题卡、条件-问题匹配训练</td>
+            </tr>
+            <tr>
+              <td><strong>概念类</strong></td>
+              <td>面积/周长混淆、单位换算错误、分数意义不清</td>
+              <td>回到概念图示，不急着刷题</td>
+              <td>图形化解释、概念辨析题</td>
+            </tr>
+            <tr>
+              <td><strong>建模类</strong></td>
+              <td>不会找数量关系、不知道用加减乘除、不会画线段图</td>
+              <td>降低数字难度，先训练建模方法</td>
+              <td>线段图、表格法、数量关系填空</td>
+            </tr>
+            <tr>
+              <td><strong>习惯类</strong></td>
+              <td>步骤跳跃、不检查、答案没单位、书写混乱</td>
+              <td>建立答题规范和检查清单</td>
+              <td>订正模板、步骤完整性检查</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="warning section">
+        <h3>个性化的边界</h3>
+        <p>
+          第一版不要让 AI 自动决定孩子“该学什么路径”。更稳的做法是：AI 给出建议和理由，老师确认后执行。
+          这既降低错误风险，也让老师不会觉得自己被系统架空。
+        </p>
+      </div>
+    </section>
+
+    <section id="input" class="section">
+      <h2>六、题目录入：要让老师“低成本把旧资料变成新资产”</h2>
+
+      <div class="grid grid-4">
+        <div class="card">
+          <h3>图片录入</h3>
+          <p>适合手机拍试卷、练习册、学生错题。第一版必须支持。</p>
+          <span class="tag">高频</span>
+        </div>
+
+        <div class="card">
+          <h3>PDF 录入</h3>
+          <p>适合老师已有讲义、机构资料。支持按页拆题和批量识别。</p>
+          <span class="tag">刚需</span>
+        </div>
+
+        <div class="card">
+          <h3>Excel/Word 录入</h3>
+          <p>适合已有电子题库或老师整理的表格题目。</p>
+          <span class="tag">第二优先级</span>
+        </div>
+
+        <div class="card">
+          <h3>手动录入</h3>
+          <p>适合少量精品题、补充题、老师自编题。</p>
+          <span class="tag">兜底</span>
+        </div>
+      </div>
+
+      <h3>题目录入后的标准结构</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>字段</th>
+              <th>说明</th>
+              <th>是否第一版必做</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>题干/图片</td>
+              <td>保留原题图片和 OCR 文本，方便老师核对</td>
+              <td>必做</td>
+            </tr>
+            <tr>
+              <td>年级/学科</td>
+              <td>小学数学可先覆盖 3～6 年级，降低复杂度</td>
+              <td>必做</td>
+            </tr>
+            <tr>
+              <td>知识点/子知识点</td>
+              <td>如“分数意义”“小数乘法”“面积周长”“应用题数量关系”</td>
+              <td>必做</td>
+            </tr>
+            <tr>
+              <td>题型</td>
+              <td>计算题、填空题、选择题、应用题、图形题</td>
+              <td>必做</td>
+            </tr>
+            <tr>
+              <td>难度</td>
+              <td>基础、提升、挑战。早期不要做太细</td>
+              <td>必做</td>
+            </tr>
+            <tr>
+              <td>答案/解析</td>
+              <td>可由 AI 生成初稿，老师确认</td>
+              <td>必做</td>
+            </tr>
+            <tr>
+              <td>常见错因</td>
+              <td>用于后续个性化推荐</td>
+              <td>必做</td>
+            </tr>
+            <tr>
+              <td>教材版本</td>
+              <td>人教版、苏教版、北师大版等</td>
+              <td>第二阶段</td>
+            </tr>
+            <tr>
+              <td>能力目标</td>
+              <td>计算能力、空间想象、建模、逻辑推理等</td>
+              <td>第二阶段</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="success section">
+        <h3>录入体验设计重点</h3>
+        <p>
+          老师上传一页试卷后，系统先自动拆出题目卡片。老师不需要逐字录入，只需要像批量改标签一样确认：
+          “这题知识点对不对？难度对不对？解析能不能用？” 录入动作越像“审核”，越容易坚持使用。
+        </p>
+      </div>
+    </section>
+
+    <section id="tech" class="section">
+      <h2>七、第一版技术架构建议</h2>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>层级</th>
+              <th>建议方案</th>
+              <th>关键要求</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>前端</strong></td>
+              <td>老师端 Web：Next.js / React；家长端：H5 或微信小程序</td>
+              <td>老师端优先 Web，移动端只做上传和轻查看。</td>
+            </tr>
+            <tr>
+              <td><strong>后端</strong></td>
+              <td>Node.js / Python 均可；建议 API 服务 + AI 任务队列</td>
+              <td>OCR、拆题、生成作业等任务异步处理，避免前端卡死。</td>
+            </tr>
+            <tr>
+              <td><strong>数据库</strong></td>
+              <td>PostgreSQL</td>
+              <td>存学生、题目、错因、作业、老师记录、家长反馈。</td>
+            </tr>
+            <tr>
+              <td><strong>文件存储</strong></td>
+              <td>对象存储</td>
+              <td>保存题目图片、作业照片、PDF、原始讲义。</td>
+            </tr>
+            <tr>
+              <td><strong>OCR</strong></td>
+              <td>先接成熟 OCR/多模态模型</td>
+              <td>第一版不要自研 OCR，重点在流程和结果校验。</td>
+            </tr>
+            <tr>
+              <td><strong>AI 层</strong></td>
+              <td>大模型 + 结构化提示词 + 标签体系约束</td>
+              <td>输出必须结构化，不能让模型随意发挥。</td>
+            </tr>
+            <tr>
+              <td><strong>PDF 生成</strong></td>
+              <td>HTML 模板转 PDF</td>
+              <td>作业要适合打印，支持二维码回传。</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>核心数据表简版</h3>
+      <div class="grid grid-3">
+        <div class="card">
+          <h3>Student</h3>
+          <p>学生基本信息、年级、班级、家长联系方式、当前状态。</p>
+        </div>
+        <div class="card">
+          <h3>LearningProfile</h3>
+          <p>薄弱知识点、错因分布、近期表现、下次课建议。</p>
+        </div>
+        <div class="card">
+          <h3>Question</h3>
+          <p>题干、图片、答案、解析、知识点、难度、题型、来源。</p>
+        </div>
+        <div class="card">
+          <h3>Homework</h3>
+          <p>作业包、题目列表、PDF、提交状态、批改结果。</p>
+        </div>
+        <div class="card">
+          <h3>MistakeRecord</h3>
+          <p>错题、学生答案、错因标签、订正情况、老师确认状态。</p>
+        </div>
+        <div class="card">
+          <h3>ParentFeedback</h3>
+          <p>周报、课后反馈、老师修改记录、发送状态。</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="roadmap" class="section">
+      <h2>八、MVP 开发路径：不要一口吃成平台</h2>
+
+      <div class="roadmap">
+        <div class="milestone">
+          <h3>第 0 阶段：人工验证，不写完整系统</h3>
+          <p>
+            找 1～2 个老师、20～50 个学生，用表格 + AI + 手工 PDF 先跑一周。
+            验证老师最需要的是“家长反馈”“错题分析”“作业推荐”还是“课前提醒”。
+          </p>
+          <p><strong>产出：</strong>真实工作流、字段清单、老师愿意付费的场景。</p>
+        </div>
+
+        <div class="milestone">
+          <h3>第 1 阶段：Web 工作台 MVP</h3>
+          <p>
+            做学生列表、学生详情、课后记录、AI 家长反馈、下次课提醒。
+            这一阶段可以暂时不做复杂题库，先把“课后记录 → 跟进提醒”跑通。
+          </p>
+          <p><strong>产出：</strong>老师每天愿意打开的工作台雏形。</p>
+        </div>
+
+        <div class="milestone">
+          <h3>第 2 阶段：题目录入和私有题库</h3>
+          <p>
+            支持图片/PDF 上传，AI 拆题、打标签、生成答案解析，老师确认后入库。
+            这一阶段开始沉淀机构自己的教研资产。
+          </p>
+          <p><strong>产出：</strong>可复用的私有题库。</p>
+        </div>
+
+        <div class="milestone">
+          <h3>第 3 阶段：错题上传和作业生成</h3>
+          <p>
+            家长拍照上传作业，AI 识别错题和错因。系统根据学生薄弱点从题库推荐题目，
+            老师确认后生成纸质 PDF。
+          </p>
+          <p><strong>产出：</strong>个性化作业闭环。</p>
+        </div>
+
+        <div class="milestone">
+          <h3>第 4 阶段：班级/机构级数据看板</h3>
+          <p>
+            当数据足够后，再做班级薄弱点、老师跟进质量、续费风险提醒、机构共享题库。
+          </p>
+          <p><strong>产出：</strong>从工具升级为机构管理资产。</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="risk" class="section">
+      <h2>九、风险、壁垒与验证指标</h2>
+
+      <div class="grid grid-2">
+        <div class="card">
+          <h3>主要风险</h3>
+          <p><strong>1. 老师嫌麻烦：</strong>如果录入动作太重，产品会失败。</p>
+          <p><strong>2. AI 不准：</strong>错因、答案、解析出错，会伤害信任。</p>
+          <p><strong>3. 家长不买账：</strong>如果反馈像套模板，没有“孩子被关注”的感觉，价值会变弱。</p>
+          <p><strong>4. 题库沉淀慢：</strong>早期没有足够题目时，作业推荐体验会不稳定。</p>
+        </div>
+
+        <div class="card">
+          <h3>应对策略</h3>
+          <p><strong>1. AI 生成，老师确认：</strong>所有面向家长/学生的内容都要经过老师审核。</p>
+          <p><strong>2. 录入尽量变成审核：</strong>让老师确认标签，而不是手动填写长表单。</p>
+          <p><strong>3. 先小范围跑通：</strong>先做一个年级、一个科目、一个老师场景。</p>
+          <p><strong>4. 每次使用都沉淀数据：</strong>周报沉淀沟通记录，错题沉淀错因，作业沉淀训练效果。</p>
+        </div>
+      </div>
+
+      <h3>第一版北极星指标</h3>
+      <div class="principle">
+        <p class="quote">每个学生每周被有效跟进的次数。</p>
+        <p class="muted">
+          不要只看 AI 调用次数，也不要只看生成了多少报告。真正重要的是：这个系统有没有让每个孩子被老师更持续、更具体地关注。
+        </p>
+      </div>
+
+      <h3>关键验证指标</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>指标</th>
+              <th>目标</th>
+              <th>说明</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>老师课后记录完成率</td>
+              <td>≥ 70%</td>
+              <td>老师愿不愿意持续使用，是最早的生命线。</td>
+            </tr>
+            <tr>
+              <td>AI 反馈草稿采纳率</td>
+              <td>≥ 60%</td>
+              <td>老师是否觉得 AI 写的东西可用。</td>
+            </tr>
+            <tr>
+              <td>题目标签一次通过率</td>
+              <td>≥ 75%</td>
+              <td>题目录入能否真正省时间。</td>
+            </tr>
+            <tr>
+              <td>作业推荐替换率</td>
+              <td>≤ 40%</td>
+              <td>如果老师大量替换，说明推荐不准。</td>
+            </tr>
+            <tr>
+              <td>家长反馈正向率</td>
+              <td>≥ 70%</td>
+              <td>家长是否感到孩子被关注、服务更细。</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>十、第一版最终建议</h2>
+      <div class="grid grid-2">
+        <div class="success">
+          <h3>建议先做</h3>
+          <p>
+            <strong>老师 Web 工作台 + 家长作业上传 H5 + 私有题库雏形。</strong>
+            先把“课后记录、家长反馈、下次课提醒、题目录入、个性化纸质作业”这条主线跑顺。
+          </p>
+        </div>
+
+        <div class="warning">
+          <h3>建议先不做</h3>
+          <p>
+            不做学习机、不做独立学生 App、不做 AI 陪聊、不做在线刷题社区、不做全科大平台。
+            第一版越克制，越容易把真实需求打穿。
+          </p>
+        </div>
+      </div>
+
+      <div class="one-liner">
+        第一版不是证明“AI 很强”，而是证明“老师用了以后，真的能更稳定地跟进每个学生”。
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>参考依据与外部观察</h2>
+      <div class="card">
+        <p>
+          1. 多个教育 AI 研究和产品实践都指向同一个方向：AI 适合帮助教师减负、生成反馈和支持个性化学习，但需要保留教师监督，尤其是在评分、反馈和学生数据使用上。
+        </p>
+        <p>
+          2. K-12 教师对 AI 自动评分存在信任顾虑，更倾向于“AI 生成初稿/建议 + 教师复核”的模式。
+        </p>
+        <p>
+          3. 中国教育 AI 正在快速发展，学情分析、内容生产、智能辅导已成为教培机构数字化的重要方向，但小教培的本地化工作流仍有细分机会。
+        </p>
+        <p class="small">
+          参考来源：Axios 关于教师 AI 指导不足的报道；ACL Anthology 2025 年 K-12 AI grading co-design 研究；Reuters 关于中国 AI 教育改革报道；Discovery Education 关于 2026 K-12 趋势文章；相关 AI rubric / human-in-the-loop grading 研究。
+        </p>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <p>生成日期：2026-05-28｜版本：MVP 产品思路 v1.0</p>
+      <p>建议下一步：用 1 个老师、20～50 个学生，先跑 2 周“课后记录 + 家长反馈 + 下次课提醒”的人工半自动验证。</p>
+    </footer>
+  </div>
+</body>
+</html>
