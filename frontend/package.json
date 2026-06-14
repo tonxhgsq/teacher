@@ -1,0 +1,12 @@
+{
+  "name": "teacher-workbench-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/dev-server.mjs",
+    "build": "node scripts/build.mjs",
+    "check": "node --check src/app.js && node scripts/check-html.mjs",
+    "smoke": "node scripts/smoke.mjs"
+  }
+}
