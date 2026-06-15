@@ -7,6 +7,7 @@ import { db } from '../db/schema.js';
 import { decodeMaybeMojibake } from '../lib/textEncoding.js';
 import { normalizeMathText } from '../lib/mathText.js';
 import {
+  buildQuestionOwnerWhere,
   readableQuestionOwnerIds,
   requireSystemQuestionBankAdmin,
   systemQuestionBankStatus,
@@ -61,12 +62,12 @@ r.post('/system-library/unlock', async (req, res) => {
 
 r.get('/', async (req, res) => {
   const { status } = req.query;
-  const { ownerIds } = await readableQuestionOwnerIds(req.user);
-  const placeholders = ownerIds.map(() => '?').join(',');
-  const args = status ? [status, ...ownerIds] : ownerIds;
+  const { ownerIds, includeLegacySystemBank } = await readableQuestionOwnerIds(req.user);
+  const ownerWhere = buildQuestionOwnerWhere(ownerIds, includeLegacySystemBank);
+  const args = status ? [status, ...ownerWhere.args] : ownerWhere.args;
   const { rows } = status
-    ? await db.execute({ sql: `SELECT * FROM questions WHERE status = ? AND owner_user_id IN (${placeholders}) ORDER BY source_file ASC, COALESCE(sort_order, id) ASC, id ASC`, args })
-    : await db.execute({ sql: `SELECT * FROM questions WHERE owner_user_id IN (${placeholders}) ORDER BY source_file ASC, COALESCE(sort_order, id) ASC, id ASC`, args });
+    ? await db.execute({ sql: `SELECT * FROM questions WHERE status = ? AND ${ownerWhere.sql} ORDER BY source_file ASC, COALESCE(sort_order, id) ASC, id ASC`, args })
+    : await db.execute({ sql: `SELECT * FROM questions WHERE ${ownerWhere.sql} ORDER BY source_file ASC, COALESCE(sort_order, id) ASC, id ASC`, args });
   res.json(rows.map(q => fmt(q, req.user.id)));
 });
 

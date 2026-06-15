@@ -180,10 +180,25 @@ export async function initDb() {
   await ensureColumn('credit_transactions', 'ref_id', "TEXT DEFAULT ''");
   await ensureColumn('agent_chat_logs', 'mode', "TEXT DEFAULT 'chat'");
   await ensureColumn('agent_chat_logs', 'error', "TEXT DEFAULT ''");
+  await assignLegacyQuestionsToSystemOwner();
 }
 
 async function ensureColumn(table, column, definition) {
   const { rows } = await db.execute(`PRAGMA table_info(${table})`);
   if (rows.some(row => row.name === column)) return;
   await db.execute(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
+}
+
+async function assignLegacyQuestionsToSystemOwner() {
+  const systemOwnerUsername = process.env.SYSTEM_QUESTION_BANK_OWNER || 'test';
+  const { rows } = await db.execute({
+    sql: 'SELECT id FROM users WHERE username = ? LIMIT 1',
+    args: [systemOwnerUsername]
+  });
+  const ownerId = Number(rows[0]?.id || 0);
+  if (!ownerId) return;
+  await db.execute({
+    sql: 'UPDATE questions SET owner_user_id = ? WHERE owner_user_id IS NULL OR owner_user_id = 0',
+    args: [ownerId]
+  });
 }

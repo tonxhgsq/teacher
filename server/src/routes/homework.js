@@ -1,7 +1,7 @@
 import express from 'express';
 import { db } from '../db/schema.js';
 import { homeworkCost, spendCredits } from '../lib/credits.js';
-import { readableQuestionOwnerIds } from '../lib/systemQuestionBank.js';
+import { buildQuestionOwnerWhere, readableQuestionOwnerIds } from '../lib/systemQuestionBank.js';
 
 const r = express.Router();
 const parse = (s, fb) => { try { return JSON.parse(s); } catch { return fb; } };
@@ -160,9 +160,9 @@ r.post('/generate', async (req, res) => {
     args: [studentId, req.user.id]
   });
   const recentIds = recentQuestionIds(homeworkRows, 5);
-  const { ownerIds, systemBank } = await readableQuestionOwnerIds(req.user);
-  const placeholders = ownerIds.map(() => '?').join(',');
-  const { rows } = await db.execute({ sql: `SELECT * FROM questions WHERE status = 'approved' AND owner_user_id IN (${placeholders}) ORDER BY id DESC`, args: ownerIds });
+  const { ownerIds, includeLegacySystemBank, systemBank } = await readableQuestionOwnerIds(req.user);
+  const ownerWhere = buildQuestionOwnerWhere(ownerIds, includeLegacySystemBank);
+  const { rows } = await db.execute({ sql: `SELECT * FROM questions WHERE status = 'approved' AND ${ownerWhere.sql} ORDER BY id DESC`, args: ownerWhere.args });
   if (!rows.length) {
     const error = systemBank.enabled
       ? '题库里还没有已入库题目，请联系 test 账户维护系统题库'
