@@ -28,7 +28,8 @@ app.use(express.static(frontendDir));
 app.get('/', (req, res) => res.sendFile(join(frontendDir, 'AI学情工作台_v1.html')));
 
 const PORT = process.env.PORT || 3001;
+const HOST = process.env.HOST || '127.0.0.1';
 initDb().then(() => {
-  const server = app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+  const server = app.listen(PORT, HOST, () => console.log(`Server running on http://${HOST}:${PORT}`));
   server.timeout = 300000; // 5分钟，给多页PDF识别留够时间
 }).catch(err => { console.error('DB init failed:', err); process.exit(1); });
