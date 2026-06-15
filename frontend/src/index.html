@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 学情工作台</title>
+<link rel="stylesheet" href="/src/styles.css?v=20260611-editable-library-name">
+</head>
+<body class="app-booting">
+<section class="landing-page" id="landing-page">
+  <div class="landing-shell" id="landing-shell">
+    <div class="landing-top">
+      <div class="landing-brand" role="button" tabindex="0" onclick="showLandingHome()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();showLandingHome();}">
+        <span class="landing-brand-mark">📚</span>
+        <span>AI 学情工作台</span>
+      </div>
+      <div id="landing-account-area"></div>
+    </div>
+    <main class="landing-main" id="landing-home-main">
+      <h1 class="landing-title">以科技普惠，助教育平权</h1>
+      <div class="landing-actions">
+          <button class="btn btn-primary landing-enter" onclick="openWorkspaceEntry()">进入工作台</button>
+      </div>
+    </main>
+    <section class="landing-auth-stage" id="landing-auth-stage"></section>
+    <div class="landing-foot" id="landing-foot">
+      <div class="landing-step"><strong>错题登记</strong>从已生成作业里标记错题。</div>
+      <div class="landing-step"><strong>学情沉淀</strong>确认两级分类和新增薄弱分类。</div>
+      <div class="landing-step"><strong>针对练习</strong>按薄弱点生成练习并保存记录。</div>
+      <div class="landing-step"><strong>AI 助教</strong>网页端与飞书端统一协助老师处理学情任务。</div>
+      <div class="landing-step"><strong>学生管理</strong>集中查看学生薄弱点、错题沉淀和跟进记录。</div>
+      <div class="landing-step"><strong>作业生成</strong>按综合练习或薄弱点专项练习生成可编辑试卷。</div>
+    </div>
+  </div>
+</section>
+<div class="app is-hidden" id="workspace-app">
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo" role="button" tabindex="0" onclick="showLandingHome()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();showLandingHome();}">
+      <span>📚</span>
+      <span>AI 学情工作台</span>
+    </div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-item active" onclick="switchTab('dashboard', this)">
+      <span class="nav-icon">📊</span><span>仪表盘</span>
+    </div>
+    <div class="nav-item" onclick="switchTab('students', this)">
+      <span class="nav-icon">👨‍🎓</span><span>学生管理</span>
+    </div>
+    <div class="nav-item" onclick="switchTab('homework', this)">
+      <span class="nav-icon">📄</span><span>作业生成</span>
+    </div>
+    <div class="nav-item" onclick="switchTab('mistakes', this)">
+      <span class="nav-icon">🔍</span><span>错题分析</span>
+    </div>
+    <div class="nav-item" onclick="switchTab('agent', this)">
+      <span class="nav-icon">🤖</span><span>AI 助教</span>
+    </div>
+    <div class="nav-item" onclick="switchTab('questions', this)">
+      <span class="nav-icon">🗂️</span><span>题库管理</span>
+    </div>
+  </nav>
+</aside>
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title" id="topbar-title">仪表盘</div>
+    <div class="topbar-right">
+      <span class="topbar-date" id="topbar-date"></span>
+      <button class="credit-pill" id="credit-pill" onclick="toggleCreditDrawer(true)"><span class="credit-icon">✦</span><span id="credit-pill-text">积分 1280</span></button>
+      <div id="workspace-account-area"></div>
+    </div>
+  </div>
+  <div class="content">
+    <!-- PLACEHOLDER for tab content, filled by JS -->
+    <div id="tab-dashboard" class="tab-content active"></div>
+    <div id="tab-students" class="tab-content"></div>
+    <div id="tab-questions" class="tab-content"></div>
+    <div id="tab-homework" class="tab-content"></div>
+    <div id="tab-mistakes" class="tab-content"></div>
+    <div id="tab-agent" class="tab-content"></div>
+  </div>
+</div>
+</div>
+<div class="toast" id="toast"></div>
+<div class="credit-drawer-mask" id="credit-mask" onclick="toggleCreditDrawer(false)"></div>
+<aside class="credit-drawer" id="credit-drawer">
+  <div class="flex items-center justify-between gap-12">
+    <div>
+      <div class="card-title" style="margin-bottom:2px">积分账户</div>
+      <div class="text-muted text-sm">AI 功能使用消耗</div>
+    </div>
+    <button class="btn btn-secondary btn-sm" onclick="toggleCreditDrawer(false)">关闭</button>
+  </div>
+  <div id="credit-drawer-content"></div>
+</aside>
+<div class="modal-mask" id="student-history-modal" onclick="if(event.target===this)toggleStudentHistoryModal(false)">
+  <div class="modal-panel history-modal-panel">
+    <div class="flex items-center justify-between gap-12" style="margin-bottom:14px">
+      <div>
+        <div class="modal-title" id="student-history-title" style="margin-bottom:3px">最近错题和变化</div>
+        <div class="modal-desc" id="student-history-desc" style="margin:0">查看该学生最近写入的错题记录和近 7 天变化。</div>
+      </div>
+      <button class="btn btn-secondary btn-sm" onclick="toggleStudentHistoryModal(false)">关闭</button>
+    </div>
+    <div id="student-history-modal-content" class="history-modal-content"></div>
+  </div>
+</div>
+<div class="modal-mask" id="student-create-modal" onclick="if(event.target===this)toggleStudentCreateModal(false)">
+  <div class="modal-panel">
+    <div class="modal-title">添加学生</div>
+    <div class="modal-desc">填写基础信息即可创建学生档案；薄弱点会在错题分析后自动生成。</div>
+    <input class="modal-field" id="student-create-name" placeholder="学生姓名">
+    <input class="modal-field" id="student-create-grade" placeholder="年级，例如：三年级" value="三年级">
+    <select class="modal-field" id="student-create-status">
+      <option value="stable">稳定</option>
+      <option value="follow-up">待跟进</option>
+      <option value="high-risk">需关注</option>
+      <option value="progress">进步中</option>
+    </select>
+    <textarea class="modal-field" id="student-create-notes" rows="3" placeholder="备注，可不填"></textarea>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="toggleStudentCreateModal(false)">取消</button>
+      <button class="btn btn-primary" id="student-create-submit" onclick="createStudent()">添加</button>
+    </div>
+  </div>
+</div>
+<div class="modal-mask" id="feishu-modal" onclick="if(event.target===this)toggleFeishuModal(false)">
+  <div class="modal-panel">
+    <div class="modal-title">一键接入飞书</div>
+    <div class="modal-desc">授权后，系统会帮老师创建 AI 助教入口，并把它接入飞书私聊和家长群。</div>
+    <div class="feishu-auth-card">
+      <div class="feishu-auth-row"><span class="feishu-auth-dot">1</span><span>跳转到飞书授权页面，由老师或机构管理员确认。</span></div>
+      <div class="feishu-auth-row"><span class="feishu-auth-dot">2</span><span>授权成功后，自动生成飞书机器人入口。</span></div>
+      <div class="feishu-auth-row" style="margin-bottom:0"><span class="feishu-auth-dot">3</span><span>回到工作台后选择要绑定的家长群。</span></div>
+    </div>
+    <button class="btn btn-primary" id="feishu-one-click-btn" style="width:100%;margin-bottom:12px" onclick="agentOneClickFeishu()">去飞书授权</button>
+    <div class="text-muted text-sm" id="feishu-one-click-status" style="min-height:18px;margin-bottom:10px"></div>
+    <button class="advanced-link" onclick="toggleFeishuAdvanced()">使用自建应用接入</button>
+    <div class="advanced-panel" id="feishu-advanced-panel">
+      <a class="modal-link" onclick="showToast('配置指南后续会跳转到飞书开放平台说明')">配置指南</a>
+      <div class="modal-radio-row">
+        <label><input type="radio" name="feishu-connect-mode" value="websocket" checked> WebSocket 长连接</label>
+        <label><input type="radio" name="feishu-connect-mode" value="callback"> 使用 URL 回调</label>
+      </div>
+      <input class="modal-field" id="feishu-app-id" placeholder="cli_xxxxxxxxxxxxxxxx" autocomplete="off">
+      <input class="modal-field" id="feishu-app-secret" placeholder="App Secret" type="password" autocomplete="new-password">
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="toggleFeishuModal(false)">取消</button>
+        <button class="btn btn-primary" onclick="agentRegisterFeishu()">注册</button>
+      </div>
+    </div>
+    <div class="modal-actions" id="feishu-simple-actions">
+      <button class="btn btn-secondary" onclick="toggleFeishuModal(false)">取消</button>
+    </div>
+  </div>
+</div>
+<div class="modal-mask" id="mistake-analysis-modal" onclick="if(event.target===this)toggleMistakeAnalysisModal(false)">
+  <div class="modal-panel history-modal-panel">
+    <div id="mistake-analysis-modal-content"></div>
+  </div>
+</div>
+<script src="/src/app.js?v=20260611-editable-library-name" defer></script>
+</body>
+</html>

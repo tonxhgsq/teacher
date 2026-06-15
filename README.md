@@ -7,16 +7,15 @@
 - **仪表盘**：KPI 概览、今日提醒、学生概览、班级薄弱点分布、题库新增
 - **学生管理**：学生档案、知识点掌握状态、课后记录、家长反馈草稿
 - **作业生成**：按薄弱点筛题、难度配比、生成试卷预览
-- **错题分析**：上传作业照片 → OCR 识别题目 → 勾选错题 → AI 分析薄弱点
-- **题库管理**：上传图片/PDF/Excel/Word → 百度 OCR 识别 → 审核入库
+- **错题分析**：选择已生成作业 → 标记对题/错题 → AI 分析新增薄弱点
+- **题库管理**：上传字段完整的 CSV/JSON/Markdown → 预览编辑 → 审核入库
 - **接入 Agent**：飞书/企微等家长端 Bot 配置（开发中）
 
 ## 技术栈
 
-- 前端：单文件 HTML（原生 JS + CSS）
+- 前端：`frontend/` 静态前端工程（原生 JS + CSS，拆分为 HTML/CSS/JS）
 - 后端：Node.js + Express
 - 数据库：SQLite（via @libsql/client）
-- OCR：百度 OCR API
 - AI：Claude API（通过 Mimo 代理）
 
 ## 快速开始
@@ -41,6 +40,18 @@ node src/index.js
 
 浏览器访问 `http://localhost:3001`
 
+后端会托管 `frontend/src/index.html`。旧版单文件入口保留在 `http://localhost:3001/legacy.html` 作为对照。
+
+### 前端工程命令
+
+```bash
+cd frontend
+npm run check
+npm run build
+npm run smoke
+npm run dev
+```
+
 ---
 
 ## API Key 配置说明
@@ -57,27 +68,32 @@ node src/index.js
 
 获取地址：[platform.xiaomimimo.com](https://platform.xiaomimimo.com)
 
-### 百度 OCR
-
-用于识别作业照片和 PDF 题目。
-
-| 变量 | 说明 |
-|------|------|
-| `BAIDU_OCR_API_KEY` | 百度智能云应用的 API Key |
-| `BAIDU_OCR_SECRET_KEY` | 百度智能云应用的 Secret Key |
-
-获取步骤：
-1. 登录 [console.bce.baidu.com](https://console.bce.baidu.com)
-2. 进入「文字识别」→ 创建应用
-3. 复制 API Key 和 Secret Key
-
-所用接口：`accurate_basic`（通用文字识别高精度版），需开通该接口权限。
-
----
-
 ## 数据库
 
-首次启动自动创建 `server/data/teacher.db`（SQLite），无需手动建表。
+首次启动自动创建 `data/teacher.db`（SQLite），无需手动建表。
+
+### 备份与恢复
+
+备份会同时保存 SQLite 数据库和题内截图目录：
+
+```bash
+cd server
+npm run backup
+```
+
+恢复默认只预演，不会覆盖当前数据：
+
+```bash
+cd server
+npm run restore -- --from data/backups/teacher-backup-xxxx
+```
+
+确认恢复时再加 `--yes`：
+
+```bash
+cd server
+npm run restore -- --from data/backups/teacher-backup-xxxx --yes
+```
 
 ## 飞书 Bot 接入（待开发）
 

@@ -1,896 +1,15 @@
-﻿<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI 学情工作台</title>
-<style>
-:root {
-  --bg: #f4f1ea;
-  --panel: #fffdf8;
-  --panel-soft: #fbf7ef;
-  --green: #2f8f55;
-  --green-light: #e8f5ee;
-  --orange: #d4862f;
-  --orange-light: #fdf0e0;
-  --red: #c0392b;
-  --red-light: #fdecea;
-  --blue: #2980b9;
-  --blue-light: #e8f4fd;
-  --brown: #9b5c2e;
-  --line: #e8dfd1;
-  --text: #3d2b1f;
-  --muted: #9b8b7a;
-  --shadow: 0 18px 45px rgba(61, 43, 31, 0.08);
-  --shadow-soft: 0 8px 22px rgba(61, 43, 31, 0.05);
-  --radius: 18px;
-  --sidebar: 236px;
-}
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; background: radial-gradient(circle at 20% 0%, #fff8ec 0, var(--bg) 320px); color: var(--text); min-height: 100vh; }
-
-/* Layout */
-.app { display: flex; min-height: 100vh; }
-.app.is-hidden { display: none; }
-.landing-page { min-height: 100vh; padding: 28px; background: linear-gradient(180deg, #fffdf8 0%, var(--bg) 100%); }
-.landing-shell { width: min(1120px, 100%); min-height: calc(100vh - 56px); margin: 0 auto; display: grid; grid-template-rows: auto 1fr auto; gap: 34px; }
-.landing-shell.auth-mode { grid-template-rows: auto 1fr; }
-.landing-shell.auth-mode .landing-main,
-.landing-shell.auth-mode .landing-foot { display: none; }
-.landing-top { display: flex; align-items: center; justify-content: space-between; gap: 18px; position: relative; z-index: 10; }
-#landing-account-area { position: relative; z-index: 12; pointer-events: auto; }
-.landing-brand { display: inline-flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 900; color: var(--green); cursor: pointer; }
-.landing-brand-mark { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; background: var(--green-light); border: 1px solid #cdebd8; }
-.landing-auth { display: inline-flex; align-items: center; overflow: hidden; border-radius: 999px; background: var(--panel); border: 1px solid var(--line); box-shadow: var(--shadow-soft); position: relative; z-index: 13; pointer-events: auto; }
-.landing-auth-btn { height: 42px; min-width: 74px; border: none; padding: 0 18px; font-size: 14px; font-weight: 900; cursor: pointer; color: var(--text); background: transparent; }
-.landing-auth-btn.login { background: var(--panel-soft); color: var(--text); }
-.landing-auth-btn.register { background: transparent; color: var(--text); border-radius: 0 999px 999px 0; }
-.landing-auth-btn:hover { filter: brightness(0.98); }
-.landing-user { position: relative; }
-.landing-user-pill { height: 42px; display: inline-flex; align-items: center; gap: 8px; border: none; border-radius: 999px; background: var(--panel-soft); padding: 5px 12px 5px 5px; color: var(--text); font-size: 14px; font-weight: 900; cursor: pointer; }
-.landing-user-avatar { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; background: var(--green); color: white; font-size: 15px; font-weight: 950; }
-.landing-user-arrow { color: var(--muted); font-size: 13px; }
-.landing-user-menu { position: absolute; right: 0; top: calc(100% + 8px); width: 150px; padding: 8px; border: 1px solid var(--line); border-radius: 14px; background: var(--panel); box-shadow: var(--shadow-soft); display: none; z-index: 20; }
-.landing-user-menu.show { display: block; }
-.landing-user-menu button { width: 100%; height: 36px; border: none; border-radius: 10px; background: transparent; text-align: left; padding: 0 10px; color: var(--text); font-size: 13px; font-weight: 800; cursor: pointer; }
-.landing-user-menu button:hover { background: var(--panel-soft); }
-.landing-main { max-width: 820px; margin: 0 auto; align-self: center; padding: 28px 0 40px; text-align: center; }
-.landing-kicker { color: var(--green); font-size: 14px; font-weight: 900; margin-bottom: 18px; }
-.landing-title { font-size: clamp(32px, 4.6vw, 52px); line-height: 1.12; letter-spacing: 0; font-weight: 950; color: var(--text); margin-bottom: 50px; }
-.landing-copy { max-width: 660px; margin: 0 auto 30px; color: var(--muted); font-size: 17px; line-height: 1.8; }
-.landing-actions { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; }
-.landing-enter { min-width: 178px; height: 48px; font-size: 16px; border-radius: 14px; }
-.landing-auth-btn.active { background: var(--green); color: white; }
-.landing-auth-stage { display: none; align-self: stretch; min-height: 0; pointer-events: none; }
-.landing-auth-stage.show { display: grid; pointer-events: auto; }
-.auth-showcase { height: min(640px, calc(100vh - 128px)); min-height: 560px; display: grid; grid-template-columns: 1.15fr 0.85fr; border: 1px solid var(--line); border-radius: 26px; background: rgba(255,253,248,0.76); overflow: hidden; box-shadow: var(--shadow); }
-.auth-visual { position: relative; padding: 46px; background: linear-gradient(135deg, #f7fbf5 0%, #fffdf8 62%); border-right: 1px solid var(--line); min-height: 100%; }
-.auth-slogan { color: var(--green); font-size: 18px; font-weight: 950; margin-bottom: 72px; }
-.auth-orbit { position: absolute; width: 460px; height: 460px; left: 70px; top: 112px; border: 1px solid #dfeadc; border-radius: 50%; }
-.auth-orbit::before, .auth-orbit::after { content: ""; position: absolute; border: 1px dashed #dfeadc; border-radius: 50%; inset: 66px; }
-.auth-orbit::after { inset: 136px; }
-.auth-bubble { position: absolute; border-radius: 50%; background: linear-gradient(145deg, var(--green-light), #aee6c5); box-shadow: 0 18px 40px rgba(47,143,85,0.16); animation: auth-breathe 7s ease-in-out infinite; will-change: transform, opacity; }
-.auth-bubble.one { width: 124px; height: 124px; left: 102px; top: 310px; animation-duration: 7.6s; }
-.auth-bubble.two { width: 92px; height: 92px; right: 120px; top: 252px; background: linear-gradient(145deg, #e7f2ff, #9bcdf0); animation-duration: 8.4s; animation-delay: -1.8s; }
-.auth-bubble.three { width: 58px; height: 58px; left: 330px; top: 456px; background: linear-gradient(145deg, #fff4dc, #f5c273); animation-duration: 6.8s; animation-delay: -3s; }
-@keyframes auth-breathe {
-  0%, 100% { transform: translate3d(0, 0, 0) scale(1); opacity: 0.92; }
-  50% { transform: translate3d(0, -18px, 0) scale(1.055); opacity: 1; }
-}
-.auth-form-wrap { display: grid; place-items: center; padding: 22px 44px; background: rgba(255,255,255,0.46); min-height: 0; overflow: visible; }
-.auth-form { width: min(360px, 100%); min-height: 0; display: flex; flex-direction: column; justify-content: center; padding: 0; }
-.auth-form-title { font-size: 30px; font-weight: 950; text-align: center; margin-bottom: 16px; }
-.auth-field { margin-bottom: 8px; }
-.auth-label { display: block; font-size: 14px; font-weight: 900; margin-bottom: 6px; color: var(--text); }
-.auth-input { width: 100%; height: 40px; border: 1px solid transparent; border-radius: 12px; background: #f1f0ed; padding: 0 14px; font-size: 14px; outline: none; color: var(--text); }
-.auth-input:focus { border-color: var(--green); background: var(--panel); box-shadow: 0 0 0 3px rgba(47,143,85,0.1); }
-.auth-password-wrap { height: 40px; display: grid; grid-template-columns: 1fr 52px; border: 1px solid transparent; border-radius: 12px; background: #f1f0ed; overflow: hidden; }
-.auth-password-wrap:focus-within { border-color: var(--green); background: var(--panel); box-shadow: 0 0 0 3px rgba(47,143,85,0.1); }
-.auth-password-wrap .auth-input { height: 100%; border: none; border-radius: 0; background: transparent; box-shadow: none; padding-right: 14px; }
-.auth-password-wrap .auth-input:focus { border: none; background: transparent; box-shadow: none; }
-.auth-eye-btn { width: 52px; height: 100%; border: none; border-left: 1px solid #cdebd8; background: var(--green-light); color: var(--green); cursor: pointer; display: grid; place-items: center; }
-.auth-eye-btn svg { width: 19px; height: 19px; stroke: currentColor; stroke-width: 2.6; fill: none; stroke-linecap: round; stroke-linejoin: round; }
-.auth-eye-btn.is-hidden { background: var(--panel-soft); color: var(--muted); border-left-color: var(--line); }
-.auth-input-row { display: grid; grid-template-columns: 1fr 112px; gap: 10px; align-items: center; }
-.auth-code-btn { height: 40px; border: 1px solid var(--green); border-radius: 12px; background: var(--panel); color: var(--green); font-size: 13px; font-weight: 900; cursor: pointer; }
-.auth-code-btn:hover { background: var(--green-light); }
-.auth-check { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; margin: 8px 0; }
-.auth-submit { width: 100%; margin-top: 2px; }
-.auth-switch { text-align: center; color: var(--muted); font-size: 14px; margin-top: 14px; }
-.auth-switch a { color: var(--green); font-weight: 900; cursor: pointer; text-decoration: none; }
-.landing-foot { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; padding-top: 18px; border-top: 1px solid var(--line); }
-.landing-step { min-height: 118px; border: 1px solid var(--line); border-radius: 14px; background: rgba(255,253,248,0.72); padding: 22px 18px; color: var(--muted); font-size: 13px; line-height: 1.7; }
-.landing-step strong { display: block; color: var(--text); font-size: 15px; margin-bottom: 5px; }
-.sidebar { width: var(--sidebar); min-height: 100vh; background: rgba(255, 253, 248, 0.92); border-right: 1px solid var(--line); position: sticky; top: 0; height: 100vh; overflow-y: auto; display: flex; flex-direction: column; backdrop-filter: blur(18px); }
-.main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-.topbar { background: rgba(255, 253, 248, 0.88); border-bottom: 1px solid var(--line); padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; backdrop-filter: blur(18px); }
-.content { padding: 28px; flex: 1; }
-
-/* Sidebar */
-.sidebar-header { padding: 22px 18px 16px; border-bottom: 1px solid var(--line); }
-.sidebar-logo { font-size: 17px; font-weight: 700; color: var(--green); display: flex; align-items: center; gap: 8px; cursor: pointer; }
-.sidebar-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
-.sidebar-nav { padding: 12px 10px; flex: 1; }
-.nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; cursor: pointer; font-size: 14px; color: var(--muted); transition: all 0.15s; margin-bottom: 2px; }
-.nav-item:hover { background: var(--bg); color: var(--text); }
-.nav-item.active { background: var(--green-light); color: var(--green); font-weight: 600; box-shadow: inset 3px 0 0 var(--green); }
-.nav-icon { font-size: 18px; width: 24px; text-align: center; }
-.sidebar-footer { padding: 14px 18px; border-top: 1px solid var(--line); }
-.teacher-info { display: flex; align-items: center; gap: 10px; }
-.avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--green); color: white; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; flex-shrink: 0; }
-.teacher-name { font-size: 14px; font-weight: 600; }
-.teacher-class { font-size: 12px; color: var(--muted); }
-
-/* Topbar */
-.topbar-title { font-size: 18px; font-weight: 700; color: var(--text); }
-.topbar-right { display: flex; align-items: center; gap: 12px; }
-.topbar-date { font-size: 13px; color: var(--muted); }
-.credit-pill { display: inline-flex; align-items: center; gap: 7px; min-height: 32px; padding: 6px 12px; border: 1px solid var(--line); border-radius: 999px; background: var(--panel); color: var(--text); font-size: 13px; font-weight: 800; cursor: pointer; box-shadow: var(--shadow-soft); }
-.credit-pill.low { background: var(--orange-light); color: var(--orange); border-color: #f1c796; }
-.credit-icon { color: var(--orange); font-size: 15px; line-height: 1; }
-.credit-cost { display: inline-flex; align-items: center; gap: 4px; color: var(--muted); font-size: 12px; font-weight: 600; margin-top: 8px; }
-.credit-drawer-mask { position: fixed; inset: 0; background: rgba(61,43,31,0.16); z-index: 80; opacity: 0; pointer-events: none; transition: opacity 0.18s; }
-.credit-drawer-mask.show { opacity: 1; pointer-events: auto; }
-.credit-drawer { position: fixed; top: 0; right: 0; width: min(380px, 92vw); height: 100vh; background: var(--panel); border-left: 1px solid var(--line); z-index: 90; padding: 22px; box-shadow: -20px 0 45px rgba(61,43,31,0.12); transform: translateX(100%); transition: transform 0.2s; overflow-y: auto; }
-.credit-drawer.show { transform: translateX(0); }
-.credit-balance { font-size: 34px; font-weight: 900; line-height: 1; margin: 12px 0 6px; }
-.credit-stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 16px 0; }
-.credit-stat { background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 12px; }
-.credit-record { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; padding: 11px 0; border-bottom: 1px solid var(--line); }
-.credit-record:last-child { border-bottom: none; }
-.credit-record-title { font-size: 13px; font-weight: 700; }
-.credit-record-meta { font-size: 12px; color: var(--muted); margin-top: 4px; }
-.credit-record-cost { color: var(--red); font-size: 13px; font-weight: 800; white-space: nowrap; }
-.modal-mask { position: fixed; inset: 0; background: rgba(61,43,31,0.24); z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.18s; display: grid; place-items: center; padding: 18px; }
-.modal-mask.show { opacity: 1; pointer-events: auto; }
-.modal-panel { width: min(420px, 94vw); background: var(--panel); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 22px 60px rgba(61,43,31,0.18); padding: 22px 22px 18px; }
-.modal-panel.history-modal-panel { width: min(720px, 94vw); max-height: 82vh; overflow-y: auto; }
-.history-modal-content { min-height: 420px; }
-.modal-title { font-size: 20px; font-weight: 900; margin-bottom: 8px; color: var(--text); }
-.modal-desc { font-size: 14px; color: var(--muted); line-height: 1.55; margin-bottom: 14px; }
-.modal-link { color: var(--blue); font-size: 14px; font-weight: 800; cursor: pointer; display: inline-block; margin-bottom: 14px; }
-.modal-field { width: 100%; border: 1px solid var(--line); border-radius: 6px; background: white; padding: 10px 12px; font-size: 14px; outline: none; margin-bottom: 10px; }
-.modal-field:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(47,143,85,0.1); }
-.modal-radio-row { display: flex; gap: 14px; margin-bottom: 14px; color: var(--text); font-size: 14px; }
-.modal-radio-row label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
-.modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px; }
-.modal-tabs { display: inline-flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--panel-soft); margin-bottom: 14px; }
-.modal-tab { border: none; background: transparent; padding: 8px 12px; font-size: 13px; font-weight: 800; color: var(--muted); cursor: pointer; }
-.modal-tab.active { background: var(--green-light); color: var(--green); }
-.feishu-auth-card { border: 1px solid var(--line); border-radius: 12px; background: var(--panel-soft); padding: 14px; margin-bottom: 14px; }
-.feishu-auth-row { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 9px; font-size: 13px; color: var(--text); line-height: 1.55; }
-.feishu-auth-dot { width: 18px; height: 18px; border-radius: 50%; background: var(--green-light); color: var(--green); display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 900; flex-shrink: 0; margin-top: 1px; }
-.advanced-link { border: none; background: transparent; color: var(--muted); font-size: 13px; font-weight: 800; cursor: pointer; padding: 0; }
-.advanced-link:hover { color: var(--green); }
-.advanced-panel { display: none; border-top: 1px solid var(--line); margin-top: 14px; padding-top: 14px; }
-.advanced-panel.show { display: block; }
-
-/* Cards */
-.card { background: rgba(255, 253, 248, 0.94); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow-soft); }
-.card-title { font-size: 15px; font-weight: 700; margin-bottom: 14px; color: var(--text); }
-.card-sub { font-size: 13px; color: var(--muted); margin-bottom: 14px; }
-
-/* KPI Cards */
-.kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
-.kpi-card { background: linear-gradient(180deg, #fffefa, var(--panel-soft)); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px 22px; display: flex; align-items: center; gap: 18px; box-shadow: var(--shadow-soft); }
-.kpi-icon { width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; }
-.kpi-icon.green { background: #4caf7d; }
-.kpi-icon.orange { background: #f5a623; }
-.kpi-icon.blue { background: #4a90d9; }
-.kpi-icon.red { background: #e8705a; }
-.kpi-label { font-size: 13px; color: var(--muted); margin-bottom: 4px; }
-.kpi-value { font-size: 28px; font-weight: 800; line-height: 1.1; color: var(--text); }
-.kpi-value span { font-size: 15px; font-weight: 600; margin-left: 2px; }
-.kpi-change { font-size: 12px; margin-top: 6px; color: var(--muted); }
-.kpi-change .up { color: #4caf7d; font-weight: 600; }
-
-/* Status Pills */
-.pill { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
-.pill.red { background: var(--red-light); color: var(--red); }
-.pill.orange { background: var(--orange-light); color: var(--orange); }
-.pill.blue { background: var(--blue-light); color: var(--blue); }
-.pill.green { background: var(--green-light); color: var(--green); }
-.pill.gray { background: #f0ece6; color: var(--muted); }
-
-/* Buttons */
-.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 9px 18px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; transition: all 0.15s; min-height: 38px; }
-.btn-primary { background: var(--green); color: white; }
-.btn-primary:hover { background: #267a49; transform: translateY(-1px); box-shadow: 0 8px 16px rgba(47, 143, 85, 0.18); }
-.btn-secondary { background: var(--panel); color: var(--text); border: 1px solid var(--line); }
-.btn-secondary:hover { background: var(--bg); }
-.btn-orange { background: var(--orange); color: white; }
-.btn-orange:hover { background: #c07828; }
-.btn-danger { background: var(--red); color: white; }
-.btn-danger:hover { background: #a93226; transform: translateY(-1px); box-shadow: 0 8px 16px rgba(192, 57, 43, 0.16); }
-.btn-sm { padding: 6px 12px; font-size: 13px; }
-.btn:disabled { opacity: 0.5; cursor: not-allowed; }
-.btn.active-diff, .btn.active-count { background: var(--green); color: white; border-color: var(--green); }
-
-/* Tables */
-.table { width: 100%; border-collapse: collapse; }
-.table th { text-align: left; font-size: 12px; color: var(--muted); font-weight: 600; padding: 8px 12px; border-bottom: 1px solid var(--line); }
-.table td { padding: 12px; border-bottom: 1px solid var(--line); font-size: 14px; }
-.table tr:last-child td { border-bottom: none; }
-.table tr:hover td { background: var(--bg); }
-.table td a { color: var(--green); cursor: pointer; text-decoration: none; font-weight: 600; }
-.table td a:hover { text-decoration: underline; }
-.math-rich-text { line-height: 1.8; white-space: normal; word-break: break-word; }
-.math-frac { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; vertical-align: middle; font-size: 0.95em; line-height: 1; margin: 0 0.08em; min-width: 1.6em; }
-.math-frac.math-frac-wide { max-width: 100%; font-size: 0.9em; margin: 0.1em 0.18em; }
-.math-frac-num, .math-frac-den { display: block; padding: 0 0.16em; }
-.math-frac-wide .math-frac-num, .math-frac-wide .math-frac-den { white-space: normal; line-height: 1.35; text-align: center; }
-.math-frac-bar { width: 100%; border-top: 1.5px solid currentColor; margin: 0.08em 0; }
-.math-mixed { display: inline-flex; align-items: center; gap: 0.08em; vertical-align: middle; }
-.math-cfrac { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; vertical-align: middle; line-height: 1.08; margin: 0.06em 0.16em; }
-.math-cfrac-num { display: block; padding: 0 0.45em 0.08em; text-align: center; }
-.math-cfrac-bar { width: 100%; min-width: 2.4em; border-top: 1.5px solid currentColor; }
-.math-cfrac-den { display: inline-flex; align-items: center; justify-content: center; gap: 0.12em; padding: 0.1em 0.45em 0; text-align: center; }
-.math-cfrac .math-cfrac { font-size: 0.92em; margin-left: 0.1em; }
-.math-ml { font-size: 1.28em; vertical-align: middle; math-style: normal; }
-.math-ml-tall { vertical-align: top; }
-.math-ml mfrac { line-height: 1; math-style: normal; }
-.math-ml mrow, .math-ml mn, .math-ml mo, .math-ml mi, .math-ml mtext { math-style: normal; }
-.math-ml mtext { font-family: inherit; }
-.math-repeat-digit { position: relative; display: inline-block; line-height: 1; padding-top: 0.35em; }
-.math-repeat-dot { position: absolute; left: 50%; top: -0.08em; width: 0.22em; height: 0.22em; border-radius: 50%; background: currentColor; transform: translateX(-50%); }
-.math-underbrace { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; line-height: 1; margin: 0 0.08em; }
-.math-underbrace-main { display: block; padding: 0 0.12em; }
-.math-underbrace-brace { display: block; width: 100%; height: 0.72em; line-height: 0.72em; overflow: hidden; text-align: center; color: currentColor; font-family: "Times New Roman", serif; font-size: 1.35em; transform: scaleX(2.2); transform-origin: center; margin-top: -0.12em; }
-.math-underbrace-label { display: block; font-size: 0.76em; color: var(--muted); padding-top: 0.02em; white-space: nowrap; }
-.question-render-preview { margin-top: 8px; padding: 8px 10px; border-radius: 10px; background: var(--panel-soft); border: 1px solid var(--line); color: var(--text); }
-
-/* Grid layouts */
-.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
-.gap-16 { gap: 16px; }
-
-/* Tabs content */
-.tab-content { display: none; }
-.tab-content.active { display: block; }
-
-/* Student list + detail layout */
-.student-layout { display: grid; grid-template-columns: 280px 1fr; gap: 20px; }
-.student-list-panel { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; display: flex; flex-direction: column; }
-.student-list-header { padding: 16px; border-bottom: 1px solid var(--line); }
-.student-list-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
-.student-list-title { font-size: 14px; font-weight: 900; }
-.student-list-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
-.student-delete-toggle.active { background: var(--red-light); color: var(--red); border-color: #f3b8ae; }
-.search-input { width: 100%; padding: 8px 12px; border: 1px solid var(--line); border-radius: 8px; font-size: 13px; background: var(--bg); color: var(--text); outline: none; }
-.search-input:focus { border-color: var(--green); }
-.student-item { height: 62px; display: flex; align-items: center; gap: 10px; padding: 10px 16px; cursor: pointer; border-bottom: 1px solid var(--line); transition: background 0.1s; overflow: hidden; }
-.student-item:last-child { border-bottom: none; }
-.student-item:hover { background: var(--bg); }
-.student-item.active { background: var(--green-light); }
-.student-item.placeholder { visibility: hidden; pointer-events: none; }
-.student-item.empty { cursor: default; color: var(--muted); }
-.student-item.empty:hover { background: transparent; }
-.student-avatar { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: white; flex-shrink: 0; }
-.student-info { flex: 1; min-width: 0; }
-.student-name { font-size: 14px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.student-delete-x { width: 20px; height: 20px; border: none; border-radius: 50%; background: var(--red-light); color: var(--red); font-size: 14px; font-weight: 900; line-height: 20px; cursor: pointer; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; }
-.student-delete-x:hover { background: var(--red); color: white; }
-.student-list-tools { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-top: 10px; }
-.student-filter-btn { justify-content: center; padding: 7px 8px; min-height: 34px; font-size: 12px; background: var(--panel); color: var(--muted); border: 1px solid var(--line); }
-.student-filter-btn.active { background: var(--green-light); color: var(--green); border-color: var(--green); }
-#student-list-items { height: 434px; flex: 0 0 434px; overflow: hidden; }
-.student-list-pagination { height: 54px; flex: 0 0 54px; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 14px; border-top: 1px solid var(--line); }
-.student-page-info { font-size: 12px; color: var(--muted); font-weight: 700; }
-.student-page-btn { border: 1px solid var(--line); background: var(--panel); color: var(--muted); border-radius: 8px; padding: 6px 9px; font-size: 12px; font-weight: 800; cursor: pointer; }
-.student-page-btn:hover:not(:disabled) { border-color: var(--green); color: var(--green); background: var(--green-light); }
-.student-page-btn:disabled { opacity: 0.45; cursor: not-allowed; }
-.student-item-main { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
-.student-name-status { display: flex; align-items: center; gap: 7px; min-width: 0; white-space: nowrap; overflow: hidden; }
-.student-rate { font-size: 12px; font-weight: 700; color: var(--muted); font-variant-numeric: tabular-nums; }
-.student-rate.low { color: var(--red); }
-.student-weakline { font-size: 12px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.student-list-empty { padding: 22px 16px; color: var(--muted); font-size: 13px; text-align: center; }
-.student-profile-stack [id^="student-sediment-"] { min-height: 334px; margin-bottom: 0; }
-.student-summary { background: linear-gradient(135deg, #fffefa 0%, #f7efe3 100%); }
-.student-summary-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 12px; }
-.student-identity { display: flex; align-items: center; gap: 14px; min-width: 0; }
-.student-title { font-size: 22px; font-weight: 800; margin-bottom: 4px; }
-.student-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
-.student-actions .btn { width: 82px; height: 38px; min-height: 38px; padding: 0; line-height: 1; flex: 0 0 82px; }
-.student-overview-body { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; padding-top: 14px; border-top: 1px solid rgba(232,223,209,0.82); align-items: stretch; }
-.student-weak-left-stack { display: grid; grid-template-rows: 1fr 1fr; gap: 10px; min-height: 184px; }
-.student-weak-count-card { border: 1px solid var(--line); border-radius: 12px; background: rgba(255,253,248,0.78); padding: 12px 14px; display: flex; flex-direction: column; min-height: 0; }
-.student-weak-count-card .sediment-label { font-size: 13px; }
-.student-weak-count-card .sediment-value { flex: 1; display: grid; place-items: center; font-size: 38px; }
-.student-new-weak-card { border: 1px solid var(--line); border-radius: 12px; background: rgba(255,253,248,0.78); padding: 12px 14px; min-height: 0; }
-.student-new-weak-card .sediment-label { font-size: 13px; margin-bottom: 8px; }
-.student-weak-distribution { border: 1px solid var(--line); border-radius: 12px; background: rgba(255,253,248,0.78); padding: 14px 16px; min-height: 184px; }
-.student-weak-distribution .note-label { font-size: 13px; }
-.student-donut-wrap { display: flex; align-items: center; gap: 18px; }
-.student-donut-chart { width: 104px; height: 104px; border-radius: 50%; position: relative; flex-shrink: 0; background: conic-gradient(var(--red) 0deg 360deg); }
-.student-donut-chart::after { content: ""; position: absolute; inset: 27px; border-radius: 50%; background: var(--panel); box-shadow: inset 0 0 0 1px var(--line); }
-.student-donut-legend { flex: 1; min-width: 0; }
-.cause-list { display: flex; flex-direction: column; gap: 10px; }
-.cause-row { display: grid; grid-template-columns: minmax(82px, 110px) minmax(0, 1fr) 42px; gap: 10px; align-items: center; font-size: 13px; }
-.cause-name { color: var(--text); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.cause-track { height: 8px; background: var(--line); border-radius: 999px; overflow: hidden; }
-.cause-fill { height: 100%; border-radius: 999px; background: var(--orange); }
-.cause-fill.is-top { background: var(--red); }
-.cause-value { color: var(--muted); font-variant-numeric: tabular-nums; text-align: right; }
-.recent-error-list { display: flex; flex-direction: column; gap: 8px; }
-.recent-error-item { background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; font-size: 13px; line-height: 1.55; }
-.sediment-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
-.sediment-grid { display: grid; grid-template-columns: 0.85fr 1.15fr; gap: 14px; }
-.sediment-compact-grid { display: grid; grid-template-columns: minmax(280px, 0.78fr) minmax(320px, 1.22fr); gap: 18px; align-items: start; }
-.sediment-metrics { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-.sediment-metric { border: 1px solid var(--line); border-radius: 12px; background: rgba(255,253,248,0.78); padding: 10px 12px; min-width: 0; }
-.sediment-metric-main { display: flex; flex-direction: column; gap: 7px; }
-.sediment-value { font-size: 28px; font-weight: 900; line-height: 1; font-variant-numeric: tabular-nums; }
-.sediment-label { font-size: 12px; color: var(--muted); font-weight: 700; text-align: left; }
-.sediment-metric-main .sediment-value { text-align: center; }
-.sediment-metric-link { margin-top: 8px; border: none; background: transparent; color: var(--green); padding: 0; font-size: 12px; font-weight: 800; cursor: pointer; }
-.sediment-metric-link:hover { text-decoration: underline; }
-.sediment-kp-list { display: flex; flex-direction: column; gap: 9px; }
-.sediment-kp-row { display: grid; grid-template-columns: minmax(90px, 1fr) 100px auto; align-items: center; gap: 10px; font-size: 13px; }
-.sediment-kp-name { font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.sediment-track { height: 8px; background: var(--line); border-radius: 999px; overflow: hidden; }
-.sediment-fill { height: 100%; background: var(--red); border-radius: 999px; }
-.sediment-count { color: var(--muted); font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.sediment-empty { border: 1px dashed var(--line); background: var(--bg); border-radius: 12px; padding: 18px; color: var(--muted); font-size: 13px; line-height: 1.7; }
-.sediment-records { margin-top: 12px; display: grid; gap: 8px; }
-.sediment-record { display: grid; grid-template-columns: 86px 1fr; gap: 10px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); font-size: 13px; line-height: 1.55; }
-.sediment-record.with-action { grid-template-columns: 86px 1fr auto; align-items: center; }
-.sediment-date { color: var(--green); font-weight: 800; font-size: 12px; }
-.sediment-question { color: var(--text); overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-.sediment-record-action { border: 1px solid var(--line); background: var(--panel); color: var(--green); border-radius: 8px; padding: 5px 8px; font-size: 12px; font-weight: 800; cursor: pointer; white-space: nowrap; }
-.sediment-record-action:hover { border-color: var(--green); background: var(--green-light); }
-.sediment-record-action.danger { color: var(--red); border-color: #f3b8ae; background: var(--red-light); }
-.sediment-record-action.danger:hover { border-color: var(--red); background: #f9d8d3; }
-.sediment-trend { margin-top: 12px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-.sediment-trend-card { border: 1px solid var(--line); border-radius: 12px; background: var(--panel-soft); padding: 12px; min-width: 0; }
-.sediment-trend-title { font-size: 12px; color: var(--muted); font-weight: 800; margin-bottom: 8px; }
-.sediment-trend-main { font-size: 18px; font-weight: 900; line-height: 1.2; }
-.sediment-trend-main.up { color: var(--red); }
-.sediment-trend-main.down { color: var(--green); }
-.sediment-mini-list { display: flex; flex-direction: column; gap: 7px; margin-top: 10px; }
-.sediment-mini-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 12px; color: var(--muted); }
-.sediment-mini-name { color: var(--text); font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.sediment-delta { font-weight: 900; white-space: nowrap; }
-.sediment-delta.up { color: var(--red); }
-.sediment-delta.down { color: var(--green); }
-
-/* Note blocks */
-.note-block { background: var(--bg); border-radius: 10px; padding: 12px 14px; margin-bottom: 10px; }
-.note-label { font-size: 11px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
-.note-content { font-size: 14px; line-height: 1.6; }
-
-/* Weak point tags */
-.tag { display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; margin: 3px; }
-.tag.weak { background: var(--red-light); color: var(--red); }
-.tag.medium { background: var(--orange-light); color: var(--orange); }
-.tag.ok { background: var(--green-light); color: var(--green); }
-.tag.neutral { background: #f0ece6; color: var(--muted); }
-.library-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; }
-.library-stat { border: 1px solid var(--line); border-radius: 14px; background: rgba(255,253,248,0.78); padding: 14px 16px; }
-.library-stat-label { font-size: 12px; color: var(--muted); font-weight: 700; margin-bottom: 8px; }
-.library-stat-value { font-size: 24px; font-weight: 900; line-height: 1; }
-.library-filter-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 14px; }
-.library-select { min-width: 140px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); color: var(--text); font-size: 13px; font-weight: 700; }
-.library-coverage { display: grid; grid-template-columns: 320px 58px; justify-content: center; align-items: center; gap: 10px; min-width: 0; }
-.library-track { height: 7px; flex: 1; background: var(--line); border-radius: 999px; overflow: hidden; }
-.library-fill { height: 100%; background: var(--green); border-radius: 999px; }
-.library-file-name { font-weight: 800; margin-bottom: 3px; line-height: 1.35; }
-.library-file-meta { font-size: 12px; color: var(--muted); }
-.library-file-table { table-layout: fixed; }
-.library-file-table th { text-align: center; padding-left: 18px; padding-right: 18px; }
-.library-file-table td { vertical-align: middle; }
-.library-file-table th:nth-child(1), .library-file-table td:nth-child(1) { width: 15%; text-align: left; }
-.library-file-table th:nth-child(2), .library-file-table td:nth-child(2) { width: 18%; text-align: center; }
-.library-file-table th:nth-child(3), .library-file-table td:nth-child(3) { width: 42%; text-align: center; }
-.library-file-table th:nth-child(4), .library-file-table td:nth-child(4) { width: 14%; text-align: center; }
-.library-file-table th:nth-child(5), .library-file-table td:nth-child(5) { width: 11%; text-align: center; }
-.library-file-table .library-coverage { margin: 0 auto; width: 388px; }
-.question-edit-input, .question-edit-select { width: 100%; border: 1px solid transparent; border-radius: 8px; background: transparent; color: var(--text); font-size: 13px; line-height: 1.5; padding: 7px 8px; outline: none; }
-.question-edit-input:hover, .question-edit-select:hover { border-color: var(--line); background: var(--panel-soft); }
-.question-edit-input:focus, .question-edit-select:focus { border-color: var(--green); background: var(--panel); box-shadow: 0 0 0 3px rgba(47,143,85,0.1); }
-.question-edit-input.question-content { min-width: 280px; }
-.question-table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); }
-.question-table-wrap .question-detail-table { min-width: 900px; }
-.question-detail-table { table-layout: fixed; }
-.question-detail-table th { padding: 10px 12px; vertical-align: middle; white-space: nowrap; background: rgba(255,253,248,0.96); }
-.question-detail-table td { padding: 14px 12px; vertical-align: top; text-align: left; }
-.question-detail-table .question-index-col { width: 52px; }
-.question-index-cell { text-align: center !important; color: var(--muted); font-size: 13px !important; font-weight: 900; font-variant-numeric: tabular-nums; vertical-align: top !important; padding-top: 24px !important; line-height: 1.4; }
-.question-detail-table .question-answer-col { width: 116px; }
-.question-detail-table .question-category-col { width: 128px; }
-.question-detail-table .question-kp-col { width: 178px; }
-.question-detail-table .question-progress-col { width: 156px; }
-.question-detail-table .question-action-col { width: 80px; }
-.question-detail-table .question-edit-input, .question-detail-table .question-edit-select { min-height: 38px; padding: 8px 10px; font-size: 13px; border-color: var(--line); background: var(--panel); }
-.question-detail-table .question-edit-select { appearance: auto; }
-.question-cell { min-width: 0; }
-.question-answer-cell, .question-category-cell, .question-kp-cell, .question-progress-cell, .question-action-cell { vertical-align: middle !important; }
-.question-detail-table th:nth-child(3), .question-detail-table th:nth-child(4), .question-detail-table th:nth-child(5),
-.question-detail-table .question-answer-cell, .question-detail-table .question-category-cell, .question-detail-table .question-kp-cell { text-align: center; }
-.question-answer-cell .question-edit-input { width: 100%; text-align: center; font-weight: 800; }
-.question-category-cell .question-edit-select, .question-kp-cell .question-edit-select { width: 100%; min-width: 0; padding-left: 16px; padding-right: 22px; text-align: center; text-align-last: center; }
-.recognition-progress { width: 100%; min-width: 0; }
-.recognition-progress-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 7px; color: var(--muted); font-size: 12px; font-weight: 900; line-height: 1; }
-.recognition-progress.done .recognition-progress-head { color: var(--green); }
-.recognition-progress.pending .recognition-progress-head { color: var(--orange); }
-.recognition-check { width: 18px; height: 18px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1px solid var(--line); color: var(--muted); background: var(--panel-soft); font-size: 12px; font-weight: 950; }
-.recognition-progress.done .recognition-check { background: var(--green); border-color: var(--green); color: white; }
-.recognition-progress.pending .recognition-check { background: var(--orange-light); border-color: #f1c796; color: var(--orange); }
-.recognition-track { height: 7px; border-radius: 999px; background: var(--line); overflow: hidden; }
-.recognition-fill { height: 100%; width: var(--progress); border-radius: inherit; background: var(--green); transition: width 0.25s ease; }
-.recognition-progress.pending .recognition-fill { background: var(--orange); }
-.recognition-progress.running .recognition-fill { background: linear-gradient(90deg, var(--green), #7ecf9e); transition: width 0.45s ease; }
-.import-progress { margin: 0 0 14px; padding: 13px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel-soft); }
-.import-progress-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; color: var(--muted); font-size: 13px; font-weight: 900; margin-bottom: 9px; }
-.import-progress-status { color: var(--text); }
-.import-progress-track { height: 9px; border-radius: 999px; background: var(--line); overflow: hidden; }
-.import-progress-fill { height: 100%; width: var(--progress); border-radius: inherit; background: linear-gradient(90deg, var(--green), #7ecf9e); transition: width 0.35s ease; }
-.import-progress.done .import-progress-status, .import-progress.done .import-progress-count { color: var(--green); }
-.import-progress.done .import-progress-fill { background: var(--green); }
-.import-progress.pending .import-progress-status, .import-progress.pending .import-progress-count { color: var(--orange); }
-.import-progress.pending .import-progress-fill { background: var(--orange); }
-.question-edit-textarea { width: 100%; min-width: 0; min-height: 54px; border: 1px solid transparent; border-radius: 8px; background: transparent; color: var(--text); font-size: 13px; line-height: 1.6; padding: 7px 8px; outline: none; resize: vertical; font-family: inherit; overflow: hidden; word-break: break-word; display: block; }
-.question-edit-textarea:hover { border-color: var(--line); background: var(--panel-soft); }
-.question-edit-textarea:focus { border-color: var(--green); background: var(--panel); box-shadow: 0 0 0 3px rgba(47,143,85,0.1); overflow: auto; }
-.question-math-preview { width: 100%; min-height: 54px; border: 1px solid transparent; border-radius: 8px; color: var(--text); font-size: 13px; line-height: 1.75; padding: 7px 8px; word-break: break-word; cursor: text; }
-.question-math-preview:hover { border-color: var(--line); background: var(--panel-soft); }
-.question-math-preview.editing { display: none; }
-.question-edit-textarea.is-hidden { display: none; }
-.question-pagination { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding-top: 14px; margin-top: 14px; border-top: 1px solid var(--line); }
-.pagination-controls { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-.pagination-page { min-width: 34px; height: 34px; padding: 0 10px; border: 1px solid var(--line); border-radius: 9px; background: var(--panel); color: var(--text); font-size: 13px; font-weight: 800; cursor: pointer; }
-.pagination-page.active { background: var(--green); color: white; border-color: var(--green); }
-.pagination-page:disabled { opacity: 0.45; cursor: not-allowed; }
-.kp-picker { position: relative; display: inline-block; width: 158px; text-align: left; }
-.kp-picker-btn { width: 100%; min-height: 36px; display: inline-flex; align-items: center; justify-content: space-between; gap: 6px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); color: var(--text); font-size: 13px; line-height: 1.35; padding: 7px 10px; cursor: pointer; text-align: left; }
-.kp-picker-btn:hover, .kp-picker.open .kp-picker-btn { border-color: var(--line); background: var(--panel-soft); }
-.kp-picker-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
-.kp-picker-menu { position: absolute; left: 0; width: max(190px, 100%); top: calc(100% + 4px); z-index: 40; display: none; max-height: 220px; overflow-y: auto; padding: 6px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); box-shadow: var(--shadow); }
-.kp-picker.open .kp-picker-menu { display: block; }
-.kp-picker-option { width: 100%; border: none; background: transparent; color: var(--text); border-radius: 7px; padding: 8px 9px; text-align: left; font-size: 13px; line-height: 1.35; cursor: pointer; }
-.kp-picker-option:hover { background: var(--green-light); color: var(--green); }
-.kp-picker-option.active { background: var(--green-light); color: var(--green); font-weight: 800; }
-.kp-picker-group { padding: 8px 9px 5px; color: var(--muted); font-size: 12px; font-weight: 900; position: sticky; top: -6px; background: var(--panel); }
-.question-category-pill { display: inline-flex; align-items: center; justify-content: center; width: 100%; min-height: 34px; max-width: 100%; padding: 6px 10px; border: 1px solid var(--line); border-radius: 9px; background: var(--panel-soft); color: var(--text); font-size: 12px; font-weight: 900; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.question-category-pill.pending { color: var(--orange); background: var(--orange-light); border-color: #f1c796; }
-.filter-picker { position: relative; min-width: 200px; }
-.filter-picker-btn { width: 100%; min-height: 42px; display: flex; align-items: center; justify-content: space-between; gap: 8px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); color: var(--text); font-size: 13px; font-weight: 800; line-height: 1.35; padding: 9px 12px; cursor: pointer; text-align: left; }
-.filter-picker-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
-.filter-picker-menu { position: absolute; left: 0; right: 0; top: calc(100% + 5px); z-index: 50; display: none; max-height: 220px; overflow-y: auto; padding: 6px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); box-shadow: var(--shadow); }
-.filter-picker.open .filter-picker-menu { display: block; }
-.filter-picker-option { width: 100%; border: none; background: transparent; color: var(--text); border-radius: 8px; padding: 8px 9px; text-align: left; font-size: 13px; line-height: 1.35; cursor: pointer; }
-.filter-picker-option:hover { background: var(--green-light); color: var(--green); }
-.filter-picker-option.active { background: var(--green-light); color: var(--green); font-weight: 800; }
-.question-action-cell { min-width: 56px; white-space: nowrap; text-align: center !important; }
-
-/* Upload zone */
-.upload-zone { border: 2px dashed var(--line); border-radius: var(--radius); padding: 40px; text-align: center; cursor: pointer; transition: all 0.15s; background: rgba(255, 253, 248, 0.75); }
-.upload-zone:hover { border-color: var(--green); background: var(--green-light); transform: translateY(-1px); }
-.upload-icon { font-size: 40px; margin-bottom: 12px; }
-.upload-text { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
-.upload-sub { font-size: 13px; color: var(--muted); }
-
-/* Kanban */
-.kanban { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-.kanban-col { background: rgba(255, 253, 248, 0.5); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; min-height: 300px; }
-.kanban-col-header { font-size: 13px; font-weight: 700; color: var(--muted); margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; }
-.kanban-count { background: var(--line); color: var(--muted); border-radius: 20px; padding: 2px 8px; font-size: 12px; }
-.kanban-card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px; margin-bottom: 10px; box-shadow: 0 5px 15px rgba(61,43,31,0.04); }
-.kanban-card-title { font-size: 13px; font-weight: 600; margin-bottom: 6px; line-height: 1.4; }
-.kanban-card-meta { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
-.kanban-card-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
-
-/* Fake chart */
-.chart-bars { display: flex; align-items: flex-end; gap: 8px; height: 120px; padding: 0 4px; }
-.chart-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; }
-.chart-bar { width: 100%; background: var(--green); border-radius: 4px 4px 0 0; transition: height 0.3s; min-height: 4px; }
-.chart-bar.orange { background: var(--orange); }
-.chart-bar.red { background: var(--red); }
-.chart-label { font-size: 11px; color: var(--muted); text-align: center; }
-.chart-value { font-size: 12px; font-weight: 700; color: var(--text); }
-
-/* Worksheet */
-.worksheet { background: white; border: 1px solid #ddd; border-radius: 8px; padding: 32px; font-family: "SimSun", "宋体", serif; }
-.worksheet-header { text-align: center; margin-bottom: 24px; border-bottom: 2px solid #333; padding-bottom: 16px; }
-.worksheet-title { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
-.worksheet-info { font-size: 13px; color: #666; display: flex; justify-content: space-between; }
-.worksheet-q { margin-bottom: 20px; }
-.worksheet-q-num { font-weight: 700; margin-right: 6px; }
-.worksheet-line { border-bottom: 1px solid #999; margin: 8px 0; height: 24px; }
-.worksheet-editable { display: inline; min-width: 80%; outline: none; border-bottom: 1px dashed transparent; padding: 2px 3px; line-height: 1.7; }
-.worksheet-editable:focus { border-bottom-color: var(--green); background: var(--green-light); border-radius: 4px; }
-.worksheet-meta-edit { outline: none; border: 1px dashed var(--line); border-radius: 8px; padding: 6px 8px; background: var(--panel); font-size: 12px; line-height: 1.5; margin: 6px 0 8px; }
-.worksheet-tools { display: flex; justify-content: flex-end; gap: 6px; margin-bottom: 6px; }
-.worksheet-tool-btn { border: 1px solid var(--line); background: var(--panel); color: var(--muted); border-radius: 8px; padding: 4px 8px; font-size: 12px; cursor: pointer; }
-.worksheet-tool-btn:hover { border-color: var(--green); color: var(--green); }
-.homework-preview-mode .edit-only, .homework-preview-mode .worksheet-meta-edit, .homework-preview-mode .hw-answer-line { display: none !important; }
-.homework-mode-toggle { display: inline-flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--panel); }
-.homework-mode-toggle button { border: none; background: transparent; padding: 7px 12px; cursor: pointer; font-size: 13px; font-weight: 700; color: var(--muted); }
-.homework-mode-toggle button.active { background: var(--green-light); color: var(--green); }
-.homework-record-list { display: flex; flex-direction: column; gap: 8px; }
-.homework-record-item { border: 1px solid var(--line); border-radius: 12px; padding: 11px 12px; background: var(--panel); cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.homework-record-item:hover { border-color: var(--green); background: var(--green-light); }
-.homework-record-main { min-width: 0; flex: 1; }
-.homework-record-title { font-size: 13px; font-weight: 800; margin-bottom: 4px; }
-.homework-record-meta { font-size: 12px; color: var(--muted); }
-.homework-record-delete { border: 1px solid #f3b8ae; background: var(--red-light); color: var(--red); border-radius: 8px; padding: 6px 9px; font-size: 12px; font-weight: 800; cursor: pointer; flex-shrink: 0; }
-.homework-record-delete:hover { background: var(--red); color: white; border-color: var(--red); }
-.homework-record-pagination { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
-.homework-page-info { font-size: 12px; color: var(--muted); font-weight: 800; }
-.mistake-item { border: 2px solid var(--line); background: white; border-radius: 12px; padding: 14px; margin-bottom: 10px; transition: all 0.15s; display: flex; align-items: flex-start; gap: 12px; }
-.mistake-item.correct { border-color: #cdebd8; background: var(--green-light); }
-.mistake-item.wrong { border-color: var(--red); background: var(--red-light); }
-.mistake-edit { flex: 1; min-height: 42px; padding: 8px 10px; border: 1px dashed var(--line); border-radius: 10px; background: var(--panel); font-size: 14px; line-height: 1.6; outline: none; }
-.mistake-edit:focus { border-color: var(--green); background: var(--green-light); }
-.mistake-actions { display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0; padding: 4px; margin-top: 3px; border: 1px solid var(--line); border-radius: 14px; background: var(--panel-soft); box-shadow: inset 0 1px 0 rgba(255,255,255,0.72); }
-.mistake-mark-btn { width: 38px; height: 32px; border-radius: 10px; border: 1px solid transparent; background: transparent; display: inline-flex; align-items: center; justify-content: center; color: var(--muted); cursor: pointer; transition: background 0.15s, color 0.15s, border-color 0.15s, transform 0.15s, box-shadow 0.15s; }
-.mistake-mark-btn svg { width: 18px; height: 18px; stroke: currentColor; stroke-width: 2.6; fill: none; stroke-linecap: round; stroke-linejoin: round; }
-.mistake-mark-btn:hover { background: var(--panel); transform: translateY(-1px); }
-.mistake-mark-btn.correct:hover { color: var(--green); border-color: #cdebd8; }
-.mistake-mark-btn.wrong:hover { color: var(--red); border-color: #f3b8ae; }
-.mistake-mark-btn.correct.active { background: var(--green); border-color: var(--green); color: white; box-shadow: 0 6px 14px rgba(47,143,85,0.2); }
-.mistake-mark-btn.wrong.active { background: var(--red); border-color: var(--red); color: white; box-shadow: 0 6px 14px rgba(192,57,43,0.18); }
-.mistake-kp-list { display: grid; gap: 8px; }
-.mistake-kp-row { display: grid; grid-template-columns: 82px 1fr auto auto; align-items: center; gap: 10px; padding: 9px 10px; border: 1px solid var(--line); border-radius: 10px; background: rgba(255,255,255,0.72); }
-.mistake-kp-category { font-size: 12px; font-weight: 800; color: var(--green); text-align: center; padding: 4px 7px; border: 1px solid #cdebd8; border-radius: 999px; background: var(--green-light); white-space: nowrap; }
-.mistake-kp-category.pending { color: var(--orange); border-color: #f4c58f; background: #fff7ed; }
-.mistake-kp-name { font-size: 13px; font-weight: 800; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.mistake-kp-count { min-width: 50px; text-align: right; font-size: 13px; font-weight: 800; color: var(--red); }
-.mistake-kp-badge { font-size: 11px; font-weight: 800; padding: 3px 7px; border-radius: 999px; background: var(--panel); color: var(--muted); border: 1px solid var(--line); }
-.mistake-kp-badge.new { background: var(--red-light); color: var(--red); border-color: #f3b8ae; }
-.mistake-review-list { display: grid; gap: 10px; }
-.mistake-review-card { border: 1px solid var(--line); border-radius: 12px; background: rgba(255,255,255,0.74); padding: 12px; }
-.mistake-review-question { font-size: 13px; line-height: 1.6; margin-bottom: 10px; color: var(--text); }
-.mistake-review-grid { display: grid; grid-template-columns: minmax(78px, 96px) minmax(150px, 220px) 1fr; gap: 12px; align-items: start; }
-.mistake-review-fixed { min-height: 38px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); color: var(--text); font-size: 13px; font-weight: 800; padding: 8px 10px; }
-.mistake-review-fixed.pending { color: var(--orange); background: #fff7ed; border-color: #f4c58f; }
-.mistake-review-select { width: 100%; min-height: 38px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); padding: 8px 10px; color: var(--text); font-size: 13px; font-weight: 700; }
-.mistake-cause-checks { display: flex; flex-wrap: wrap; gap: 7px; }
-.mistake-cause-check { display: inline-flex; align-items: center; gap: 5px; min-height: 30px; padding: 5px 9px; border: 1px solid var(--line); border-radius: 999px; background: var(--panel); font-size: 12px; font-weight: 700; color: var(--muted); cursor: pointer; }
-.mistake-cause-check.active { background: var(--red-light); color: var(--red); border-color: #f3b8ae; }
-
-/* Toast */
-.toast { position: fixed; bottom: 28px; right: 28px; background: #333; color: white; padding: 12px 20px; border-radius: 10px; font-size: 14px; z-index: 9999; opacity: 0; transform: translateY(10px); transition: all 0.2s; pointer-events: none; }
-.toast.show { opacity: 1; transform: translateY(0); }
-
-/* Empty state */
-.empty-state { text-align: center; padding: 48px 24px; color: var(--muted); border: 2px dashed var(--line); border-radius: var(--radius); }
-.empty-icon { font-size: 36px; margin-bottom: 12px; }
-.empty-text { font-size: 15px; }
-
-/* Loading spinner */
-.loading-wrap { display: flex; align-items: center; gap: 10px; padding: 16px; color: var(--muted); font-size: 14px; }
-.spinner { width: 18px; height: 18px; border: 2px solid var(--line); border-top-color: var(--green); border-radius: 50%; animation: spin 0.7s linear infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
-
-/* Misc */
-.section-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; color: var(--text); }
-.divider { border: none; border-top: 1px solid var(--line); margin: 20px 0; }
-.flex { display: flex; }
-.flex-col { flex-direction: column; }
-.items-center { align-items: center; }
-.justify-between { justify-content: space-between; }
-.gap-8 { gap: 8px; }
-.gap-12 { gap: 12px; }
-.gap-16 { gap: 16px; }
-.mb-16 { margin-bottom: 16px; }
-.mb-20 { margin-bottom: 20px; }
-.mb-24 { margin-bottom: 24px; }
-.text-muted { color: var(--muted); font-size: 13px; }
-.text-sm { font-size: 13px; }
-.font-bold { font-weight: 700; }
-.w-full { width: 100%; }
-
-/* Textarea */
-textarea { width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 10px; font-size: 14px; font-family: inherit; background: var(--bg); color: var(--text); resize: vertical; outline: none; line-height: 1.6; }
-textarea:focus { border-color: var(--green); }
-select { padding: 8px 12px; border: 1px solid var(--line); border-radius: 8px; font-size: 14px; background: var(--panel); color: var(--text); outline: none; cursor: pointer; }
-select:focus { border-color: var(--green); }
-
-/* Error cause tags */
-.cause-tags { display: flex; flex-wrap: wrap; gap: 8px; }
-.cause-tag { padding: 6px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: 2px solid transparent; transition: all 0.15s; }
-.cause-tag.calc { background: var(--blue-light); color: var(--blue); }
-.cause-tag.read { background: var(--orange-light); color: var(--orange); }
-.cause-tag.concept { background: #f3e8ff; color: #7c3aed; }
-.cause-tag.model { background: var(--red-light); color: var(--red); }
-.cause-tag.habit { background: #f0ece6; color: var(--muted); }
-.cause-tag.selected { border-color: currentColor; }
-
-/* Feedback status */
-.feedback-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); }
-.feedback-row:last-child { border-bottom: none; }
-
-/* Progress bar */
-.progress-bar { height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; }
-.progress-fill { height: 100%; border-radius: 3px; background: var(--green); }
-.progress-fill.orange { background: var(--orange); }
-.progress-fill.red { background: var(--red); }
-
-/* Donut chart */
-.donut-card { min-height: 250px; }
-.donut-wrap { display: flex; align-items: center; gap: 24px; }
-.donut-chart { width: 126px; height: 126px; border-radius: 50%; position: relative; flex-shrink: 0; background: conic-gradient(var(--blue) 0deg 180deg, var(--green) 180deg 234deg, var(--orange) 234deg 277deg, var(--red) 277deg 328deg, #d8d2c5 328deg 360deg); }
-.donut-chart::after { content: ""; position: absolute; inset: 31px; border-radius: 50%; background: var(--panel); box-shadow: inset 0 0 0 1px var(--line); }
-.donut-legend { flex: 1; min-width: 0; }
-.donut-row { display: grid; grid-template-columns: 10px minmax(0, 1fr) auto auto; gap: 8px; align-items: center; font-size: 13px; padding: 5px 0; color: var(--muted); }
-.donut-dot { width: 8px; height: 8px; border-radius: 2px; }
-.donut-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); }
-.donut-percent { font-variant-numeric: tabular-nums; color: var(--muted); }
-.donut-count { font-variant-numeric: tabular-nums; color: var(--muted); }
-.dashboard-kpi { grid-template-columns: repeat(3, 1fr); }
-.follow-table .table th { padding: 8px 10px; }
-.follow-table .table td { padding: 10px; }
-.todo-item { display: flex; align-items: flex-start; gap: 8px; font-size: 13px; line-height: 1.55; padding: 7px 0; border-bottom: 1px solid var(--line); }
-.todo-check { width: 14px; height: 14px; border: 1px solid var(--line); border-radius: 4px; background: white; flex-shrink: 0; margin-top: 3px; }
-
-@media print {
-  .sidebar, .topbar, .no-print { display: none !important; }
-  .main { display: block; }
-  .content { padding: 0; }
-  .tab-content { display: none !important; }
-  #tab-homework { display: block !important; }
-  .worksheet { border: none; padding: 0; }
-}
-
-/* Knowledge Map */
-.km-layout { display: grid; grid-template-columns: 260px 1fr; gap: 20px; }
-.km-sidebar { display: flex; flex-direction: column; gap: 10px; }
-.km-student-card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; cursor: pointer; transition: all 0.15s; }
-.km-student-card:hover { border-color: var(--green); }
-.km-student-card.active { border-color: var(--green); background: var(--green-light); }
-.km-student-name { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
-.km-student-weak { display: flex; flex-wrap: wrap; gap: 4px; }
-
-.km-main { }
-.km-domain { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); margin-bottom: 16px; overflow: hidden; }
-.km-domain-header { display: flex; align-items: center; gap: 10px; padding: 14px 18px; cursor: pointer; user-select: none; }
-.km-domain-icon { font-size: 20px; }
-.km-domain-label { font-size: 16px; font-weight: 700; flex: 1; }
-.km-domain-stats { font-size: 12px; color: var(--muted); }
-.km-domain-toggle { font-size: 12px; color: var(--muted); transition: transform 0.2s; }
-.km-domain-toggle.open { transform: rotate(90deg); }
-.km-domain-body { padding: 0 18px 16px; display: none; }
-.km-domain-body.open { display: block; }
-
-.km-category { margin-bottom: 14px; }
-.km-category-label { font-size: 13px; font-weight: 700; color: var(--muted); margin-bottom: 8px; padding-left: 4px; }
-.km-nodes { display: flex; flex-wrap: wrap; gap: 8px; }
-.km-node { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; border: 2px solid transparent; transition: all 0.15s; position: relative; }
-.km-node.mastered { background: var(--green-light); color: var(--green); border-color: var(--green); }
-.km-node.weak { background: var(--red-light); color: var(--red); border-color: var(--red); }
-.km-node.partial { background: var(--orange-light); color: var(--orange); border-color: var(--orange); }
-.km-node.untested { background: #f0ece6; color: var(--muted); border-color: var(--line); }
-.km-node.selected { box-shadow: 0 0 0 3px rgba(47, 143, 85, 0.16); border-color: var(--green); }
-.km-node:hover { filter: brightness(0.95); }
-.km-node-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
-.km-node-count { font-size: 11px; opacity: 0.8; }
-
-.km-legend { display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
-.km-legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
-.km-legend-dot { width: 10px; height: 10px; border-radius: 3px; }
-
-.km-node-tooltip { position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%); background: #333; color: white; font-size: 12px; padding: 6px 10px; border-radius: 6px; white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity 0.15s; z-index: 100; }
-.km-node:hover .km-node-tooltip { opacity: 1; }
-
-.km-action-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; padding: 14px 18px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow-soft); }
-.km-summary { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
-.km-summary-node { display: inline-flex; align-items: center; gap: 7px; padding: 8px 11px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel-soft); color: var(--text); cursor: pointer; font-size: 13px; font-weight: 700; transition: all 0.15s; }
-.km-summary-node:hover { border-color: var(--green); transform: translateY(-1px); }
-.km-summary-node.active { background: var(--green-light); border-color: var(--green); color: var(--green); }
-.km-summary-status { font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 999px; background: #f0ece6; color: var(--muted); }
-.km-summary-status.weak { background: var(--red-light); color: var(--red); }
-.km-summary-status.partial { background: var(--orange-light); color: var(--orange); }
-.km-summary-status.mastered { background: var(--green-light); color: var(--green); }
-.km-full-map { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
-.km-focus-panel { margin-top: 14px; padding: 16px; border: 1px solid var(--line); border-radius: 14px; background: var(--panel-soft); }
-.km-focus-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 12px; }
-.km-focus-title { font-size: 16px; font-weight: 800; margin-bottom: 4px; }
-.km-focus-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
-.km-focus-box { background: rgba(255, 253, 248, 0.82); border: 1px solid var(--line); border-radius: 12px; padding: 12px; min-width: 0; }
-.km-focus-list { margin: 0; padding-left: 18px; font-size: 13px; line-height: 1.65; color: var(--text); }
-.km-focus-list li { margin-bottom: 4px; }
-
-@media (max-width: 1180px) {
-  .kpi-grid, .grid-3, .kanban { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .library-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .grid-2, .student-layout, .km-layout { grid-template-columns: 1fr; }
-  .student-overview-body, .sediment-grid, .sediment-compact-grid { grid-template-columns: 1fr; }
-  .km-focus-grid { grid-template-columns: 1fr; }
-}
-
-@media (max-width: 1320px) {
-  .sediment-compact-grid { grid-template-columns: 1fr; }
-}
-
-@media (max-width: 980px) {
-  .sediment-metrics { grid-template-columns: 1fr !important; }
-  .student-weak-left-stack { min-height: auto; }
-}
-
-@media (max-width: 760px) {
-  .landing-page { padding: 20px; }
-  .landing-shell { min-height: calc(100vh - 40px); gap: 28px; }
-  .landing-top { align-items: flex-start; }
-  .landing-main { padding: 52px 0 28px; }
-  .landing-copy { font-size: 15px; }
-  .landing-foot { grid-template-columns: 1fr; }
-  .auth-showcase { height: auto; min-height: auto; grid-template-columns: 1fr; border-radius: 18px; }
-  .auth-visual { display: none; }
-  .auth-form-wrap { padding: 28px 20px; overflow-y: visible; }
-  .auth-form { min-height: 0; padding: 0; }
-  .auth-form-title { font-size: 24px; }
-  .app { display: block; }
-  .app.is-hidden { display: none; }
-  .sidebar { position: static; width: 100%; min-height: auto; height: auto; border-right: none; border-bottom: 1px solid var(--line); }
-  .sidebar-nav { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; }
-  .sidebar-footer { display: none; }
-  .topbar { padding: 12px 16px; }
-  .content { padding: 16px; }
-  .kpi-grid, .grid-3, .grid-2, .kanban { grid-template-columns: 1fr; }
-  .library-stats { grid-template-columns: 1fr; }
-  .student-summary-head { flex-direction: column; }
-  .student-actions { width: 100%; justify-content: flex-start; }
-}
-</style>
-</head>
-<body>
-<section class="landing-page" id="landing-page">
-  <div class="landing-shell" id="landing-shell">
-    <div class="landing-top">
-      <div class="landing-brand" role="button" tabindex="0" onclick="showLandingHome()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();showLandingHome();}">
-        <span class="landing-brand-mark">📚</span>
-        <span>AI 学情工作台</span>
-      </div>
-      <div id="landing-account-area"></div>
-    </div>
-    <main class="landing-main" id="landing-home-main">
-      <h1 class="landing-title">以科技普惠，助教育平权</h1>
-      <div class="landing-actions">
-          <button class="btn btn-primary landing-enter" onclick="openWorkspaceEntry()">进入工作台</button>
-      </div>
-    </main>
-    <section class="landing-auth-stage" id="landing-auth-stage"></section>
-    <div class="landing-foot" id="landing-foot">
-      <div class="landing-step"><strong>错题登记</strong>从已生成作业里标记错题。</div>
-      <div class="landing-step"><strong>学情沉淀</strong>确认两级分类和新增薄弱分类。</div>
-      <div class="landing-step"><strong>针对练习</strong>按薄弱点生成练习并保存记录。</div>
-      <div class="landing-step"><strong>AI 助教</strong>网页端与飞书端统一协助老师处理学情任务。</div>
-      <div class="landing-step"><strong>学生管理</strong>集中查看学生薄弱点、错题沉淀和跟进记录。</div>
-      <div class="landing-step"><strong>作业生成</strong>按综合练习或薄弱点专项练习生成可编辑试卷。</div>
-    </div>
-  </div>
-</section>
-<div class="app is-hidden" id="workspace-app">
-<!-- SIDEBAR -->
-<aside class="sidebar">
-  <div class="sidebar-header">
-    <div class="sidebar-logo" role="button" tabindex="0" onclick="showLandingHome()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();showLandingHome();}">
-      <span>📚</span>
-      <span>AI 学情工作台</span>
-    </div>
-    <div class="sidebar-sub">小学数学教培助手</div>
-  </div>
-  <nav class="sidebar-nav">
-    <div class="nav-item active" onclick="switchTab('dashboard', this)">
-      <span class="nav-icon">📊</span><span>仪表盘</span>
-    </div>
-    <div class="nav-item" onclick="switchTab('students', this)">
-      <span class="nav-icon">👨‍🎓</span><span>学生管理</span>
-    </div>
-    <div class="nav-item" onclick="switchTab('homework', this)">
-      <span class="nav-icon">📄</span><span>作业生成</span>
-    </div>
-    <div class="nav-item" onclick="switchTab('mistakes', this)">
-      <span class="nav-icon">🔍</span><span>错题分析</span>
-    </div>
-    <div class="nav-item" onclick="switchTab('agent', this)">
-      <span class="nav-icon">🤖</span><span>AI 助教</span>
-    </div>
-    <div class="nav-item" onclick="switchTab('questions', this)">
-      <span class="nav-icon">🗂️</span><span>题库管理</span>
-    </div>
-  </nav>
-</aside>
-<!-- MAIN -->
-<div class="main">
-  <div class="topbar">
-    <div class="topbar-title" id="topbar-title">仪表盘</div>
-    <div class="topbar-right">
-      <span class="topbar-date" id="topbar-date"></span>
-      <button class="credit-pill" id="credit-pill" onclick="toggleCreditDrawer(true)"><span class="credit-icon">✦</span><span id="credit-pill-text">积分 1280</span></button>
-      <div id="workspace-account-area"></div>
-    </div>
-  </div>
-  <div class="content">
-    <!-- PLACEHOLDER for tab content, filled by JS -->
-    <div id="tab-dashboard" class="tab-content active"></div>
-    <div id="tab-students" class="tab-content"></div>
-    <div id="tab-questions" class="tab-content"></div>
-    <div id="tab-homework" class="tab-content"></div>
-    <div id="tab-mistakes" class="tab-content"></div>
-    <div id="tab-agent" class="tab-content"></div>
-  </div>
-</div>
-</div>
-<div class="toast" id="toast"></div>
-<div class="credit-drawer-mask" id="credit-mask" onclick="toggleCreditDrawer(false)"></div>
-<aside class="credit-drawer" id="credit-drawer">
-  <div class="flex items-center justify-between gap-12">
-    <div>
-      <div class="card-title" style="margin-bottom:2px">积分账户</div>
-      <div class="text-muted text-sm">AI 功能使用消耗</div>
-    </div>
-    <button class="btn btn-secondary btn-sm" onclick="toggleCreditDrawer(false)">关闭</button>
-  </div>
-  <div id="credit-drawer-content"></div>
-</aside>
-<div class="modal-mask" id="student-history-modal" onclick="if(event.target===this)toggleStudentHistoryModal(false)">
-  <div class="modal-panel history-modal-panel">
-    <div class="flex items-center justify-between gap-12" style="margin-bottom:14px">
-      <div>
-        <div class="modal-title" id="student-history-title" style="margin-bottom:3px">最近错题和变化</div>
-        <div class="modal-desc" id="student-history-desc" style="margin:0">查看该学生最近写入的错题记录和近 7 天变化。</div>
-      </div>
-      <button class="btn btn-secondary btn-sm" onclick="toggleStudentHistoryModal(false)">关闭</button>
-    </div>
-    <div id="student-history-modal-content" class="history-modal-content"></div>
-  </div>
-</div>
-<div class="modal-mask" id="student-create-modal" onclick="if(event.target===this)toggleStudentCreateModal(false)">
-  <div class="modal-panel">
-    <div class="modal-title">添加学生</div>
-    <div class="modal-desc">填写基础信息即可创建学生档案；薄弱点会在错题分析后自动生成。</div>
-    <input class="modal-field" id="student-create-name" placeholder="学生姓名">
-    <input class="modal-field" id="student-create-grade" placeholder="年级，例如：三年级" value="三年级">
-    <select class="modal-field" id="student-create-status">
-      <option value="stable">稳定</option>
-      <option value="follow-up">待跟进</option>
-      <option value="high-risk">需关注</option>
-      <option value="progress">进步中</option>
-    </select>
-    <textarea class="modal-field" id="student-create-notes" rows="3" placeholder="备注，可不填"></textarea>
-    <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="toggleStudentCreateModal(false)">取消</button>
-      <button class="btn btn-primary" id="student-create-submit" onclick="createStudent()">添加</button>
-    </div>
-  </div>
-</div>
-<div class="modal-mask" id="feishu-modal" onclick="if(event.target===this)toggleFeishuModal(false)">
-  <div class="modal-panel">
-    <div class="modal-title">一键接入飞书</div>
-    <div class="modal-desc">授权后，系统会帮老师创建 AI 助教入口，并把它接入飞书私聊和家长群。</div>
-    <div class="feishu-auth-card">
-      <div class="feishu-auth-row"><span class="feishu-auth-dot">1</span><span>跳转到飞书授权页面，由老师或机构管理员确认。</span></div>
-      <div class="feishu-auth-row"><span class="feishu-auth-dot">2</span><span>授权成功后，自动生成飞书机器人入口。</span></div>
-      <div class="feishu-auth-row" style="margin-bottom:0"><span class="feishu-auth-dot">3</span><span>回到工作台后选择要绑定的家长群。</span></div>
-    </div>
-    <button class="btn btn-primary" id="feishu-one-click-btn" style="width:100%;margin-bottom:12px" onclick="agentOneClickFeishu()">去飞书授权</button>
-    <div class="text-muted text-sm" id="feishu-one-click-status" style="min-height:18px;margin-bottom:10px"></div>
-    <button class="advanced-link" onclick="toggleFeishuAdvanced()">使用自建应用接入</button>
-    <div class="advanced-panel" id="feishu-advanced-panel">
-      <a class="modal-link" onclick="showToast('配置指南后续会跳转到飞书开放平台说明')">配置指南</a>
-      <div class="modal-radio-row">
-        <label><input type="radio" name="feishu-connect-mode" value="websocket" checked> WebSocket 长连接</label>
-        <label><input type="radio" name="feishu-connect-mode" value="callback"> 使用 URL 回调</label>
-      </div>
-      <input class="modal-field" id="feishu-app-id" placeholder="cli_xxxxxxxxxxxxxxxx" autocomplete="off">
-      <input class="modal-field" id="feishu-app-secret" placeholder="App Secret" type="password" autocomplete="new-password">
-      <div class="modal-actions">
-        <button class="btn btn-secondary" onclick="toggleFeishuModal(false)">取消</button>
-        <button class="btn btn-primary" onclick="agentRegisterFeishu()">注册</button>
-      </div>
-    </div>
-    <div class="modal-actions" id="feishu-simple-actions">
-      <button class="btn btn-secondary" onclick="toggleFeishuModal(false)">取消</button>
-    </div>
-  </div>
-</div>
-<script>
 // ============================================================
 // API LAYER
 // ============================================================
-const API = location.origin.includes('3001') ? `${location.origin}/api` : 'http://localhost:3001/api';
+function resolveApiBase() {
+  if (window.AI_WORKBENCH_API_BASE) return String(window.AI_WORKBENCH_API_BASE).replace(/\/$/, '');
+  const isLocalHost = ['localhost', '127.0.0.1', '::1'].includes(location.hostname);
+  const isBackendPort = location.port === '3001';
+  if (isLocalHost && !isBackendPort) return 'http://127.0.0.1:3001/api';
+  return '/api';
+}
+
+const API = resolveApiBase();
 let authToken = localStorage.getItem('teacher-auth-token') || '';
 
 function apiHeaders(extra = {}) {
@@ -907,6 +26,13 @@ async function apiJson(r) {
     throw new Error(data.error || `请求失败：${r.status}`);
   }
   return data;
+}
+
+function apiErrorMessage(err) {
+  if (err instanceof TypeError && String(err.message || '').includes('fetch')) {
+    return '无法连接后端服务，请确认工作台服务已启动';
+  }
+  return err.message || '请稍后重试';
 }
 
 const api = {
@@ -1148,7 +274,16 @@ const mockData = {
 // ============================================================
 // mockData.students / mockData.questions 在 init 后由 API 数据填充
 let currentStudent = null;
-let currentTab = 'dashboard';
+const validTabs = ['dashboard', 'students', 'homework', 'mistakes', 'agent', 'questions'];
+function getStoredTab() {
+  try {
+    const tab = localStorage.getItem('teacher-current-tab');
+    return validTabs.includes(tab) ? tab : 'dashboard';
+  } catch (e) {
+    return 'dashboard';
+  }
+}
+let currentTab = getStoredTab();
 let currentStudentFilter = 'all';
 let studentListPage = 1;
 let studentDeleteMode = false;
@@ -1159,7 +294,10 @@ let qPage = 1;
 let qImportPreview = null;
 let qClassifyLoading = false;
 let qFileClassifyLoading = '';
-let qCategoryEditMode = false;
+let qCategoryEditor = null;
+let qSystemBankState = { enabled: true, unlocked: true, isAdmin: false, cost: 0 };
+const qManualFileName = '手动添加题目.md';
+let qInsertFileName = null;
 let kmSelectedStudent = null;
 let kmFocusedNode = null;
 let kmFocusedSectionId = null;
@@ -1208,22 +346,22 @@ function renderCredits() {
     <div class="text-muted text-sm">${creditState.balance < 100 ? '余额偏低，建议及时补充。' : '余额充足，可继续使用 AI 功能。'}</div>
     <div class="credit-stat-grid">
       <div class="credit-stat">
-        <div class="note-label">今日消耗</div>
+        <div class="note-label">今日扣分</div>
         <div style="font-size:20px;font-weight:800">${creditState.todayUsed}</div>
       </div>
       <div class="credit-stat">
-        <div class="note-label">常用单价</div>
-        <div style="font-size:13px;line-height:1.7">作业 ${creditCosts.homeworkBase}+题数 · 识别 ${creditCosts.uploadPerFile}/文件</div>
+        <div class="note-label">当前策略</div>
+        <div style="font-size:13px;line-height:1.7">题库、作业和 AI 功能暂不扣积分</div>
       </div>
     </div>
-    <div class="card-title" style="margin-bottom:4px">最近消耗</div>
+    <div class="card-title" style="margin-bottom:4px">积分记录</div>
     ${creditState.records.map(r => `
       <div class="credit-record">
         <div>
           <div class="credit-record-title">${r.title}</div>
           <div class="credit-record-meta">${r.detail} · ${r.time}</div>
         </div>
-        <div class="credit-record-cost">-${r.cost}</div>
+        <div class="credit-record-cost">${Number(r.cost || 0) ? `-${r.cost}` : '免费'}</div>
       </div>
     `).join('')}
   `;
@@ -1268,18 +406,10 @@ function toggleCreditDrawer(show) {
 }
 
 function creditCostLabel(cost) {
-  return `<span class="credit-cost">预计 -${cost} 积分</span>`;
+  return '<span class="credit-cost">当前免费使用</span>';
 }
 
 function spendCredits(cost, title, detail) {
-  if (creditState.balance < cost) {
-    showToast(`积分不足：需要 ${cost}，当前 ${creditState.balance}`);
-    return false;
-  }
-  creditState.balance -= cost;
-  creditState.todayUsed += cost;
-  creditState.records.unshift({ title, cost, detail, time: '刚刚' });
-  creditState.records = creditState.records.slice(0, 8);
   renderCredits();
   return true;
 }
@@ -1308,14 +438,22 @@ const tabTitles = {
   questions: '题库管理', homework: '作业生成', mistakes: '错题分析', agent: 'AI 助教'
 };
 
-function switchTab(name, el) {
+function activateTab(name) {
+  const safeName = validTabs.includes(name) ? name : 'dashboard';
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById('tab-' + name).classList.add('active');
-  if (el) el.classList.add('active');
-  document.getElementById('topbar-title').textContent = tabTitles[name];
-  currentTab = name;
-  renderTab(name);
+  document.getElementById('tab-' + safeName)?.classList.add('active');
+  document.querySelector(`.nav-item[onclick*="'${safeName}'"]`)?.classList.add('active');
+  document.getElementById('topbar-title').textContent = tabTitles[safeName];
+  currentTab = safeName;
+}
+
+function switchTab(name) {
+  activateTab(name);
+  try {
+    localStorage.setItem('teacher-current-tab', currentTab);
+  } catch (e) {}
+  renderTab(currentTab);
 }
 
 function renderTab(name) {
@@ -1331,14 +469,17 @@ function renderTab(name) {
 }
 
 function renderCurrentTab() {
-  renderTab(currentTab || 'dashboard');
+  activateTab(currentTab || 'dashboard');
+  renderTab(currentTab);
 }
 
 async function loadWorkspaceData() {
-  let [students, questions] = await Promise.all([
+  let [students, systemBank, questions] = await Promise.all([
     api.get('/students'),
+    loadQuestionSystemBankStatus(),
     api.get('/questions')
   ]);
+  qSystemBankState = systemBank;
   ({ students, questions } = await seedIfEmpty(students, questions));
   mockData.students = students.map(withColor);
   mockData.questions = questions;
@@ -1350,6 +491,16 @@ async function loadWorkspaceData() {
   };
   currentStudent = mockData.students[0];
   await loadFeishuIntegrationStatus();
+}
+
+async function loadQuestionSystemBankStatus() {
+  try {
+    const data = await api.get('/questions/system-library/status');
+    return data.systemBank || { enabled: true, unlocked: true, isAdmin: false, cost: 0 };
+  } catch (err) {
+    console.warn('system question bank status unavailable:', err.message);
+    return { enabled: true, unlocked: true, isAdmin: false, cost: 0 };
+  }
 }
 
 async function enterWorkspace() {
@@ -1795,12 +946,11 @@ function buildDashboardTodoGroups() {
   const pendingMistakes = students
     .map(s => {
       const profile = studentProfiles[s.id];
-      const activeCount = profile && !profile.error ? (profile.activeMistakes || 0) : (s.recentErrors || []).length;
-      const needsCause = (s.status === 'high-risk' || activeCount > 0);
-      if (!needsCause) return null;
+      const pendingCount = profile && !profile.error ? (profile.unclassifiedMistakes || 0) : 0;
+      if (!pendingCount) return null;
       return {
-        text: `${s.name} 有 ${activeCount || 1} 条错题待确认二级分类`,
-        score: (s.status === 'high-risk' ? 10 : 0) + activeCount
+        text: `${s.name} 有 ${pendingCount} 条错题待确认二级分类`,
+        score: (s.status === 'high-risk' ? 10 : 0) + pendingCount
       };
     })
     .filter(Boolean)
@@ -2655,23 +1805,25 @@ function getKnowledgePointsByCategory(category) {
   return domain ? (domain.children || []).flatMap(cat => (cat.children || []).map(node => node.label)) : [];
 }
 
-function renderKnowledgeCategoryPill(point) {
+function renderKnowledgeCategoryPill(point, questionId = null) {
   const category = getKnowledgeCategoryByPoint(point);
+  const click = questionId ? ` onclick="openQuestionCategoryEditor(${questionId}, 'category')"` : '';
   return category
-    ? `<span class="question-category-pill">${escapeHtml(category)}</span>`
-    : '<span class="question-category-pill pending">待判断</span>';
+    ? `<button type="button" class="question-category-pill question-category-edit-trigger"${click}>${escapeHtml(category)}</button>`
+    : `<button type="button" class="question-category-pill question-category-edit-trigger pending"${click}>待判断</button>`;
 }
 
-function renderKnowledgePointPill(point) {
+function renderKnowledgePointPill(point, questionId = null) {
+  const click = questionId ? ` onclick="openQuestionCategoryEditor(${questionId}, 'point')"` : '';
   return isStandardKnowledgePoint(point)
-    ? `<span class="question-category-pill">${escapeHtml(point)}</span>`
-    : '<span class="question-category-pill pending">待判断考察点</span>';
+    ? `<button type="button" class="question-category-pill question-category-edit-trigger"${click}>${escapeHtml(point)}</button>`
+    : `<button type="button" class="question-category-pill question-category-edit-trigger pending"${click}>待判断考察点</button>`;
 }
 
 function qCategorySelectHtml(q) {
   const currentCategory = getKnowledgeCategoryByPoint(q.knowledgePoint);
   return `
-    <select class="question-edit-select" onchange="updateQuestionCategory(${q.id}, this.value)" aria-label="一级分类">
+    <select id="question-category-editor-${q.id}" class="question-edit-select" onchange="updateQuestionCategory(${q.id}, this.value)" onblur="closeQuestionCategoryEditorSoon()" aria-label="一级分类">
       <option value="" ${currentCategory ? '' : 'selected'}>待判断</option>
       ${getKnowledgeCategoryOptions().map(category => `<option value="${escapeHtml(category)}" ${currentCategory === category ? 'selected' : ''}>${escapeHtml(category)}</option>`).join('')}
     </select>
@@ -2682,7 +1834,7 @@ function qPointSelectHtml(q) {
   const currentCategory = getKnowledgeCategoryByPoint(q.knowledgePoint);
   const options = currentCategory ? getKnowledgePointsByCategory(currentCategory) : qKnowledgePointOptions();
   return `
-    <select class="question-edit-select" onchange="updateQuestionField(${q.id}, 'knowledgePoint', this.value)" aria-label="二级分类">
+    <select id="question-point-editor-${q.id}" class="question-edit-select" onchange="updateQuestionField(${q.id}, 'knowledgePoint', this.value)" onblur="closeQuestionCategoryEditorSoon()" aria-label="二级分类">
       <option value="" ${isStandardKnowledgePoint(q.knowledgePoint) ? '' : 'selected'}>待判断考察点</option>
       ${options.map(point => `<option value="${escapeHtml(point)}" ${q.knowledgePoint === point ? 'selected' : ''}>${escapeHtml(point)}</option>`).join('')}
     </select>
@@ -2947,7 +2099,16 @@ function syncWeakPoints(studentId) {
 // ============================================================
 // QUESTIONS (QUESTION BANK)
 // ============================================================
+function canManageSystemQuestionBank() {
+  return qSystemBankState?.isAdmin || currentUser?.username === 'test';
+}
+
+function canReadSystemQuestionBank() {
+  return true;
+}
+
 function renderQuestions() {
+  const canManage = canManageSystemQuestionBank();
   const ocr = kanbanData['pending-ocr'];
   const review = kanbanData['pending-review'];
   const approved = kanbanData['approved'];
@@ -2956,16 +2117,16 @@ function renderQuestions() {
   const stats = buildQuestionLibraryStats(allQuestions, files);
 
   document.getElementById('tab-questions').innerHTML = `
-    <div class="mb-20">
+    ${canManage ? `<div class="mb-20">
       <div class="upload-zone" id="q-upload-zone" onclick="qTriggerUpload()">
         <div class="upload-icon" id="q-upload-icon">📤</div>
         <div class="upload-text" id="q-upload-text">上传题库并预览</div>
         <div class="upload-sub">支持 CSV、Markdown、JSON，先解析成题目预览，老师确认无误后再正式入库</div>
       </div>
       <input type="file" id="q-file-input" multiple accept=".csv,.md,.json" style="display:none" onchange="qHandleFiles(this.files)">
-    </div>
+    </div>` : ''}
 
-    ${qImportPreview ? renderQuestionImportPreview() : ''}
+    ${canManage && qImportPreview ? renderQuestionImportPreview() : ''}
 
     <div class="library-stats">
       <div class="library-stat">
@@ -2988,12 +2149,15 @@ function renderQuestions() {
 
     ${qSelectedFile ? renderQuestionFileDetail(qSelectedFile) : `
       <div class="card">
-        <div class="flex items-center justify-between" style="margin-bottom:14px">
+        <div class="flex items-center justify-between" style="margin-bottom:14px;gap:12px;flex-wrap:wrap">
           <div>
-            <div class="card-title" style="margin:0">我的题库资料</div>
-            <div class="card-sub" style="margin:4px 0 0">按教材资料文件管理题目，题目会用于错题匹配和专项组卷。</div>
+            <div class="card-title" style="margin:0">${canManage ? '我的题库资料' : '系统自带题库'}</div>
+            <div class="card-sub" style="margin:4px 0 0">${canManage ? '按教材资料文件管理题目，题目会用于错题匹配和专项组卷。' : '题库由 test 账户统一维护，可查看并用于专项组卷。'}</div>
           </div>
-          <div class="text-muted text-sm">${stats.readyFiles} 个文件分类完成</div>
+          <div class="flex items-center gap-8" style="flex-wrap:wrap;justify-content:flex-end">
+            ${canManage ? `<button class="btn btn-primary btn-sm" onclick="showQuestionInsert('${escapeJs(qManualFileName)}')">添加题目</button>` : ''}
+            <div class="text-muted text-sm">${stats.readyFiles} 个文件分类完成</div>
+          </div>
         </div>
         ${files.length ? `
 	          <table class="table library-file-table">
@@ -3005,9 +2169,11 @@ function renderQuestions() {
             <tbody>
               ${files.map(f => `
                 <tr>
-	                  <td>
-		                    <div class="library-file-name">${escapeHtml(qDisplayFileName(f.name))}</div>
-		                  </td>
+                  <td>
+                    ${canManage ? `<input class="library-file-name-input" value="${escapeHtml(qDisplayFileName(f.name))}" aria-label="题库名称"
+                      onchange="renameQuestionFile('${escapeJs(f.name)}', this.value)"
+                      onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}">` : `<span>${escapeHtml(qDisplayFileName(f.name))}</span>`}
+                  </td>
 	                  <td>${qFileTypeLabel(f.ext)}</td>
 	                  <td>
 	                    <div class="library-coverage">
@@ -3019,7 +2185,7 @@ function renderQuestions() {
                   <td>
                     <div style="display:flex;gap:10px;align-items:center;white-space:nowrap">
                       <a onclick="selectQuestionFile('${escapeJs(f.name)}')">查看</a>
-                      <a onclick="deleteQuestionFile('${escapeJs(f.name)}')" style="color:var(--red)">删除</a>
+                      ${canManage ? `<a onclick="deleteQuestionFile('${escapeJs(f.name)}')" style="color:var(--red)">删除</a>` : ''}
                     </div>
                   </td>
                 </tr>
@@ -3030,13 +2196,14 @@ function renderQuestions() {
           <div class="empty-state" style="padding:36px">
             <div class="empty-icon">🗂️</div>
             <div class="empty-text">还没有题库文件</div>
-            <div class="text-muted text-sm" style="margin-top:6px">建议上传 CSV、Markdown 或 JSON，系统会按表格行或题目数组拆成题目。</div>
+            <div class="text-muted text-sm" style="margin-top:6px">${canManage ? '建议上传 CSV、Markdown 或 JSON，系统会按表格行或题目数组拆成题目。' : '系统题库暂无可用题目，请联系管理员维护。'}</div>
+            ${canManage ? `<button class="btn btn-primary btn-sm" style="margin-top:14px" onclick="showQuestionInsert('${escapeJs(qManualFileName)}')">手动添加第一题</button>` : ''}
           </div>
         `}
       </div>
     `}
   `;
-  qInitDragDrop();
+  if (canManage) qInitDragDrop();
 }
 
 function buildQuestionLibraryStats(questions, files) {
@@ -3444,7 +2611,13 @@ function buildQuestionFiles() {
 
 function qQuestionsByFile(fileName) {
   return [...kanbanData['pending-ocr'], ...kanbanData['pending-review'], ...kanbanData['approved']]
-    .filter(q => (q.sourceFile || q.fileName || (q.status === 'approved' ? '示例题库.md' : '未命名题库.md')) === fileName);
+    .filter(q => (q.sourceFile || q.fileName || (q.status === 'approved' ? '示例题库.md' : '未命名题库.md')) === fileName)
+    .sort((a, b) => qQuestionOrderValue(a) - qQuestionOrderValue(b) || Number(a.id || 0) - Number(b.id || 0));
+}
+
+function qQuestionOrderValue(q) {
+  const order = Number(q.sortOrder ?? q.sort_order);
+  return Number.isFinite(order) && order > 0 ? order : Number(q.id || 0);
 }
 
 function qFileTypeLabel(ext) {
@@ -3459,6 +2632,19 @@ function qFileStatusLabel(f) {
 
 function qDisplayFileName(name) {
   return String(name || '').replace(/\.[^.]+$/, '');
+}
+
+function qFileExt(name) {
+  const match = String(name || '').match(/\.([^.]+)$/);
+  return match ? match[1] : '';
+}
+
+function qBuildRenamedFileName(oldName, displayName) {
+  const clean = String(displayName || '').trim();
+  if (!clean) return '';
+  if (/\.[^.]+$/.test(clean)) return clean;
+  const ext = qFileExt(oldName);
+  return ext ? `${clean}.${ext}` : clean;
 }
 
 function qUnique(list, key) {
@@ -3547,6 +2733,120 @@ function qEditableQuestionHtml(id, content, changeHandler) {
   `;
 }
 
+function qReadonlyQuestionHtml(content) {
+  return `<div class="question-math-preview">${renderMathRichText(content || '')}</div>`;
+}
+
+function qSourceImageHtml(q, showEmpty = false) {
+  if (!q.sourceImage && !showEmpty) return '';
+  const inputId = `question-image-input-${q.id}`;
+  return `
+    <div class="question-source-image-editor ${q.sourceImage ? '' : 'empty'}">
+      ${q.sourceImage ? `
+        <a class="question-source-image" href="${escapeHtml(q.sourceImage)}" target="_blank" rel="noopener">
+          <img src="${escapeHtml(q.sourceImage)}" alt="题内截图">
+        </a>
+      ` : '<div class="question-source-placeholder">暂无截图</div>'}
+      <div class="question-image-actions">
+        <button class="btn btn-secondary btn-sm" type="button" onclick="document.getElementById('${inputId}')?.click()">${q.sourceImage ? '替换截图' : '上传截图'}</button>
+        <input id="${inputId}" class="question-image-input" type="file" accept="image/png,image/jpeg,image/webp,image/gif" onchange="uploadQuestionSourceImage(${q.id}, this)">
+      </div>
+    </div>
+  `;
+}
+
+function renderQuestionInsertBar(fileName, total) {
+  const defaultPosition = total + 1;
+  return `
+    <div class="question-insert-bar">
+      <span class="question-insert-label">插入到第</span>
+      <input id="question-insert-position" class="question-insert-input" type="number" min="1" max="${total + 1}" value="${defaultPosition}" onkeydown="if(event.key==='Enter'){confirmQuestionInsert('${escapeJs(fileName)}')}">
+      <span class="question-insert-label">题前</span>
+      <button class="btn btn-primary btn-sm" onclick="confirmQuestionInsert('${escapeJs(fileName)}')">确认新增</button>
+      <button class="btn btn-secondary btn-sm" onclick="cancelQuestionInsert()">取消</button>
+      <span class="text-muted text-sm">当前共 ${total} 题，输入 ${total + 1} 表示追加到最后</span>
+    </div>
+  `;
+}
+
+function showQuestionInsert(fileName = qSelectedFile || qManualFileName) {
+  if (!canManageSystemQuestionBank()) {
+    showToast('只有 test 账户可以新增题目');
+    return;
+  }
+  qSelectedFile = fileName || qManualFileName;
+  qInsertFileName = qSelectedFile;
+  renderQuestions();
+  setTimeout(() => {
+    const input = document.getElementById('question-insert-position');
+    input?.focus();
+    input?.select();
+  }, 0);
+}
+
+function cancelQuestionInsert() {
+  qInsertFileName = null;
+  renderQuestions();
+}
+
+function confirmQuestionInsert(fileName) {
+  const input = document.getElementById('question-insert-position');
+  const position = Number(input?.value || 1);
+  addManualQuestion(fileName, position);
+}
+
+async function saveQuestionFileOrder(fileName, orderedQuestions) {
+  if (!canManageSystemQuestionBank()) return;
+  const items = orderedQuestions.map((q, index) => ({ id: q.id, sortOrder: index + 1 }));
+  orderedQuestions.forEach((q, index) => {
+    q.sortOrder = index + 1;
+    q.sort_order = index + 1;
+  });
+  await api.put('/questions/order/batch', { items });
+}
+
+async function addManualQuestion(fileName = qSelectedFile || qManualFileName, insertPosition = 1) {
+  if (!canManageSystemQuestionBank()) {
+    showToast('只有 test 账户可以新增题目');
+    return;
+  }
+  const sourceFile = fileName || qManualFileName;
+  const existingQuestions = qQuestionsByFile(sourceFile);
+  const insertIndex = Math.max(0, Math.min(existingQuestions.length, (Number(insertPosition) || 1) - 1));
+  const question = {
+    content: '',
+    type: '计算题',
+    difficulty: '基础',
+    knowledgePoint: '待判断考察点',
+    answer: '',
+    status: 'approved',
+    sourceFile,
+    sourceType: 'manual',
+    sortOrder: insertIndex + 1
+  };
+  try {
+    const data = await api.post('/questions', question);
+    const created = { ...question, id: data.id, sourceImage: '', importBatchId: null };
+    kanbanData.approved.push(created);
+    const orderedQuestions = [
+      ...existingQuestions.slice(0, insertIndex),
+      created,
+      ...existingQuestions.slice(insertIndex)
+    ];
+    await saveQuestionFileOrder(sourceFile, orderedQuestions);
+    mockData.questions = [...kanbanData['pending-ocr'], ...kanbanData['pending-review'], ...kanbanData.approved];
+    qSelectedFile = sourceFile;
+    qInsertFileName = null;
+    qFilters = { knowledgePoint: 'all' };
+    qPage = Math.max(1, Math.ceil((insertIndex + 1) / 10));
+    renderQuestions();
+    setTimeout(() => qStartQuestionEdit(`question-${created.id}`), 0);
+    showToast('已新增题目，可以填写题干并上传截图');
+  } catch (e) {
+    showToast('新增题目失败：' + e.message);
+  }
+}
+
 function qStartQuestionEdit(id) {
   const preview = document.getElementById('preview-' + id);
   const edit = document.getElementById('edit-' + id);
@@ -3610,18 +2910,53 @@ function selectQuestionFile(fileName) {
   qSelectedFile = fileName;
   qFilters = { knowledgePoint: 'all' };
   qPage = 1;
-  qCategoryEditMode = false;
+  qCategoryEditor = null;
   renderQuestions();
+}
+
+async function renameQuestionFile(oldFileName, nextDisplayName) {
+  if (!canManageSystemQuestionBank()) {
+    showToast('只有 test 账户可以修改题库');
+    renderQuestions();
+    return;
+  }
+  const nextFileName = qBuildRenamedFileName(oldFileName, nextDisplayName);
+  if (!nextFileName) {
+    showToast('题库名称不能为空');
+    renderQuestions();
+    return;
+  }
+  if (nextFileName === oldFileName) return;
+  const qs = qQuestionsByFile(oldFileName);
+  if (!qs.length) return;
+  try {
+    for (const q of qs) {
+      q.sourceFile = nextFileName;
+      q.fileName = nextFileName;
+      await api.put('/questions/' + q.id, { sourceFile: nextFileName });
+    }
+    if (qSelectedFile === oldFileName) qSelectedFile = nextFileName;
+    renderQuestions();
+    showToast('题库名称已更新');
+  } catch (err) {
+    await loadWorkspaceData();
+    renderQuestions();
+    showToast('修改失败：' + (err.message || '请稍后重试'));
+  }
 }
 
 function backToQuestionFiles() {
   qSelectedFile = null;
   qPage = 1;
-  qCategoryEditMode = false;
+  qCategoryEditor = null;
   renderQuestions();
 }
 
 async function deleteQuestionFile(fileName) {
+  if (!canManageSystemQuestionBank()) {
+    showToast('只有 test 账户可以删除题库');
+    return;
+  }
   const qs = qQuestionsByFile(fileName);
   if (!qs.length) return;
   const ok = confirm(`确定删除「${qDisplayFileName(fileName)}」吗？将同时删除 ${qs.length} 道题。`);
@@ -3644,6 +2979,11 @@ async function deleteQuestionFile(fileName) {
 }
 
 async function updateQuestionField(id, field, value) {
+  if (!canManageSystemQuestionBank()) {
+    showToast('只有 test 账户可以修改题目');
+    renderQuestions();
+    return;
+  }
   const q = mockData.questions.find(item => item.id === id)
     || [...kanbanData['pending-ocr'], ...kanbanData['pending-review'], ...kanbanData['approved']].find(item => item.id === id);
   if (!q) return;
@@ -3658,6 +2998,7 @@ async function updateQuestionField(id, field, value) {
   const payload = { [field]: nextValue };
   try {
     await api.put('/questions/' + id, payload);
+    qCategoryEditor = null;
     showToast('题目已保存');
     renderQuestions();
   } catch (e) {
@@ -3666,14 +3007,66 @@ async function updateQuestionField(id, field, value) {
       const found = kanbanData[col].find(item => item.id === id);
       if (found) found[field] = oldValue;
     });
+    qCategoryEditor = null;
     showToast('保存失败：' + e.message);
     renderQuestions();
   }
 }
 
-function toggleQuestionCategoryEditMode() {
-  qCategoryEditMode = !qCategoryEditMode;
+async function uploadQuestionSourceImage(id, input) {
+  if (!canManageSystemQuestionBank()) {
+    showToast('只有 test 账户可以上传或替换截图');
+    if (input) input.value = '';
+    return;
+  }
+  const file = input?.files?.[0];
+  if (!file) return;
+  const q = mockData.questions.find(item => item.id === id)
+    || [...kanbanData['pending-ocr'], ...kanbanData['pending-review'], ...kanbanData['approved']].find(item => item.id === id);
+  const oldImage = q?.sourceImage || '';
+  const formData = new FormData();
+  formData.append('image', file);
+  try {
+    showToast('正在上传截图...');
+    const resp = await fetch(API + '/questions/' + id + '/source-image', {
+      method: 'POST',
+      headers: apiHeaders(),
+      body: formData
+    });
+    const data = await apiJson(resp);
+    const nextImage = data.question?.sourceImage || data.sourceImage;
+    if (q && nextImage) q.sourceImage = nextImage;
+    ['pending-ocr', 'pending-review', 'approved'].forEach(col => {
+      const found = kanbanData[col].find(item => item.id === id);
+      if (found && nextImage) found.sourceImage = nextImage;
+    });
+    showToast('截图已替换');
+    renderQuestions();
+  } catch (e) {
+    if (q) q.sourceImage = oldImage;
+    showToast('截图替换失败：' + e.message);
+  } finally {
+    if (input) input.value = '';
+  }
+}
+
+function openQuestionCategoryEditor(id, field) {
+  if (!canManageSystemQuestionBank()) return;
+  qCategoryEditor = { id: Number(id), field };
   renderQuestions();
+  setTimeout(() => {
+    const input = document.getElementById(`question-${field === 'category' ? 'category' : 'point'}-editor-${id}`);
+    input?.focus();
+  }, 0);
+}
+
+function closeQuestionCategoryEditorSoon() {
+  setTimeout(() => {
+    const active = document.activeElement;
+    if (active?.id?.startsWith('question-category-editor-') || active?.id?.startsWith('question-point-editor-')) return;
+    qCategoryEditor = null;
+    renderQuestions();
+  }, 120);
 }
 
 async function updateQuestionCategory(id, category) {
@@ -3683,6 +3076,10 @@ async function updateQuestionCategory(id, category) {
 }
 
 async function classifyQuestionFile(fileName) {
+  if (!canManageSystemQuestionBank()) {
+    showToast('只有 test 账户可以修改题库分类');
+    return;
+  }
   const qs = qQuestionsByFile(fileName);
   if (!qs.length || qFileClassifyLoading) return;
   qFileClassifyLoading = fileName;
@@ -3730,6 +3127,7 @@ async function classifyQuestionFile(fileName) {
 }
 
 function renderQuestionFileDetail(fileName) {
+  const canManage = canManageSystemQuestionBank();
   const qs = qQuestionsByFile(fileName);
   const filtered = qs;
   const pageSize = 10;
@@ -3737,32 +3135,21 @@ function renderQuestionFileDetail(fileName) {
   const page = Math.min(Math.max(1, qPage || 1), totalPages);
   qPage = page;
   const paged = filtered.slice((page - 1) * pageSize, page * pageSize);
-  const classified = qs.filter(q => isStandardKnowledgePoint(q.knowledgePoint)).length;
   return `
-    <div class="card mb-20">
-      <div class="flex items-center justify-between" style="margin-bottom:12px">
-        <div>
-          <button class="btn btn-secondary btn-sm" onclick="backToQuestionFiles()" style="margin-bottom:10px">← 返回文件列表</button>
-          <div class="card-title" style="margin:0">${escapeHtml(qDisplayFileName(fileName))}</div>
-          <div class="card-sub" style="margin:4px 0 0">${classified}/${qs.length} 已分类</div>
-        </div>
-      </div>
-    </div>
     <div class="card">
-      <div class="flex items-center justify-between" style="gap:12px;flex-wrap:wrap;margin-bottom:14px">
-        <div>
-          <div class="card-title" style="margin:0">题目明细</div>
-          <div class="card-sub" style="margin:4px 0 0">当前显示 ${filtered.length ? (page - 1) * pageSize + 1 : 0}-${Math.min(page * pageSize, filtered.length)} / ${filtered.length} 道题</div>
+      <div class="flex items-center justify-between" style="gap:12px;flex-wrap:wrap;margin-bottom:18px">
+        <div class="question-file-head">
+          <button class="btn btn-secondary btn-sm" onclick="backToQuestionFiles()">← 返回文件列表</button>
+          <div class="card-title" style="margin:0">${escapeHtml(qDisplayFileName(fileName))}</div>
         </div>
         <div class="library-filter-row" style="margin:0">
+          ${canManage ? `<button class="btn btn-primary btn-sm" onclick="showQuestionInsert('${escapeJs(fileName)}')">新增题目</button>
           <button class="btn btn-primary btn-sm" onclick="classifyQuestionFile('${escapeJs(fileName)}')" ${qFileClassifyLoading ? 'disabled' : ''}>
             ${qFileClassifyLoading === fileName ? '判断中...' : '按标准判断考察点'}
-          </button>
-          <button class="btn btn-secondary btn-sm ${qCategoryEditMode ? 'active-count' : ''}" onclick="toggleQuestionCategoryEditMode()">
-            ${qCategoryEditMode ? '完成调整' : '调整分类'}
-          </button>
+          </button>` : '<span class="pill green">只读使用</span>'}
         </div>
       </div>
+      ${canManage && qInsertFileName === fileName ? renderQuestionInsertBar(fileName, filtered.length) : ''}
       <div class="question-table-wrap">
         <table class="table question-detail-table">
           <colgroup>
@@ -3783,18 +3170,19 @@ function renderQuestionFileDetail(fileName) {
               <tr>
                 <td class="question-index-cell">${(page - 1) * pageSize + index + 1}</td>
                 <td class="question-cell">
-                  ${qEditableQuestionHtml(`question-${q.id}`, q.content, `updateQuestionField(${q.id}, 'content', this.value)`)}
+                  ${canManage ? qEditableQuestionHtml(`question-${q.id}`, q.content, `updateQuestionField(${q.id}, 'content', this.value)`) : qReadonlyQuestionHtml(q.content)}
+                  ${canManage ? qSourceImageHtml(q, true) : qSourceImageHtml(q, false)}
                 </td>
                 <td class="question-answer-cell">
-                  <input class="question-edit-input" value="${escapeHtml(q.answer || '')}" onchange="updateQuestionField(${q.id}, 'answer', this.value)" aria-label="答案">
+                  ${canManage ? `<input class="question-edit-input" value="${escapeHtml(q.answer || '')}" onchange="updateQuestionField(${q.id}, 'answer', this.value)" aria-label="答案">` : `<span>${escapeHtml(q.answer || '')}</span>`}
                 </td>
                 <td class="question-category-cell">
-                  ${qCategoryEditMode ? qCategorySelectHtml(q) : renderKnowledgeCategoryPill(q.knowledgePoint)}
+                  ${canManage && qCategoryEditor?.id === q.id && qCategoryEditor?.field === 'category' ? qCategorySelectHtml(q) : renderKnowledgeCategoryPill(q.knowledgePoint, canManage ? q.id : null)}
                 </td>
                 <td class="question-kp-cell">
-                  ${qCategoryEditMode ? qPointSelectHtml(q) : renderKnowledgePointPill(q.knowledgePoint)}
+                  ${canManage && qCategoryEditor?.id === q.id && qCategoryEditor?.field === 'point' ? qPointSelectHtml(q) : renderKnowledgePointPill(q.knowledgePoint, canManage ? q.id : null)}
                 </td>
-                <td class="question-action-cell"><a onclick="deleteQuestion(${q.id})">删除</a></td>
+                <td class="question-action-cell">${canManage ? `<a onclick="deleteQuestion(${q.id})">删除</a>` : '<span class="text-muted text-sm">只读</span>'}</td>
               </tr>
             `).join('') || `<tr><td colspan="6" class="text-muted" style="text-align:center;padding:28px">没有符合筛选条件的题目</td></tr>`}
           </tbody>
@@ -3856,10 +3244,18 @@ function qInitDragDrop() {
 }
 
 function qTriggerUpload() {
+  if (!canManageSystemQuestionBank()) {
+    showToast('只有 test 账户可以上传题库');
+    return;
+  }
   document.getElementById('q-file-input').click();
 }
 
 async function qHandleFiles(files) {
+  if (!canManageSystemQuestionBank()) {
+    showToast('只有 test 账户可以上传题库');
+    return;
+  }
   if (!files || files.length === 0) return;
   const zone = document.getElementById('q-upload-zone');
   const icon = document.getElementById('q-upload-icon');
@@ -3904,6 +3300,7 @@ async function qHandleFiles(files) {
 	}
 
 function moveToReview(id) {
+  if (!canManageSystemQuestionBank()) return;
   const q = kanbanData['pending-ocr'].find(q => q.id === id);
   if (!q) return;
   kanbanData['pending-ocr'] = kanbanData['pending-ocr'].filter(q => q.id !== id);
@@ -3915,6 +3312,7 @@ function moveToReview(id) {
 }
 
 function approveQuestion(id) {
+  if (!canManageSystemQuestionBank()) return;
   const q = kanbanData['pending-review'].find(q => q.id === id);
   if (!q) return;
   kanbanData['pending-review'] = kanbanData['pending-review'].filter(q => q.id !== id);
@@ -3927,6 +3325,10 @@ function approveQuestion(id) {
 }
 
 function deleteQuestion(id) {
+  if (!canManageSystemQuestionBank()) {
+    showToast('只有 test 账户可以删除题目');
+    return;
+  }
   ['pending-ocr', 'pending-review', 'approved'].forEach(col => {
     kanbanData[col] = kanbanData[col].filter(q => q.id !== id);
   });
@@ -3957,7 +3359,7 @@ function renderHomework() {
 
 function renderHomeworkGenerateView() {
   return `
-    <div class="grid-2">
+    <div class="homework-generate-layout">
       <div>
         <div class="card mb-20">
           <div class="card-title">生成个性化作业</div>
@@ -4028,8 +3430,11 @@ function switchHomeworkSubTab(tab) {
 
 function renderHWWeakPoints(s) {
   const selected = homeworkFocusPoint?.label || '';
-  const options = homeworkKnowledgePointOptions(s);
   const weakPoints = getStudentActualWeakPoints(s);
+  const categories = getKnowledgeCategoryOptions();
+  const selectedCategory = getKnowledgeCategoryByPoint(selected) || categories[0] || '';
+  const categoryPoints = getKnowledgePointsByCategory(selectedCategory);
+  const selectedPoint = categoryPoints.includes(selected) ? selected : '';
   return `
     <div class="note-label" style="margin-bottom:8px">练习范围</div>
     <div class="homework-mode-toggle" style="margin-bottom:10px">
@@ -4041,11 +3446,20 @@ function renderHWWeakPoints(s) {
       <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
         ${weakPoints.length ? weakPoints.map(w => `<button class="tag ${selected === w ? 'ok' : 'weak'}" style="border:none;cursor:pointer" onclick="selectHomeworkWeakPoint('${escapeJs(w)}')">${escapeHtml(w)}</button>`).join('') : '<span class="tag neutral">该学生暂无历史薄弱点</span>'}
       </div>
-      <div style="display:grid;grid-template-columns:1fr;gap:8px;margin-bottom:8px">
-        <select id="hw-point-select" onchange="selectHomeworkWeakPoint(this.value)" style="width:100%">
-          <option value="">从题库考察点选择</option>
-          ${options.map(opt => `<option value="${escapeHtml(opt)}" ${selected === opt ? 'selected' : ''}>${escapeHtml(opt)}</option>`).join('')}
-        </select>
+      <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;margin-bottom:8px">
+        <div>
+          <div class="note-label" style="margin-bottom:6px">一级分类</div>
+          <select id="hw-category-select" onchange="selectHomeworkCategory(this.value)" style="width:100%">
+            ${categories.map(category => `<option value="${escapeHtml(category)}" ${selectedCategory === category ? 'selected' : ''}>${escapeHtml(category)}</option>`).join('')}
+          </select>
+        </div>
+        <div>
+          <div class="note-label" style="margin-bottom:6px">二级分类</div>
+          <select id="hw-point-select" onchange="selectHomeworkWeakPoint(this.value)" style="width:100%">
+            <option value="" ${selectedPoint ? '' : 'selected'}>选择二级分类</option>
+            ${categoryPoints.map(point => `<option value="${escapeHtml(point)}" ${selectedPoint === point ? 'selected' : ''}>${escapeHtml(point)}</option>`).join('')}
+          </select>
+        </div>
       </div>
     ` : `
       <div class="text-muted text-sm">综合练习会按薄弱点题目和非薄弱点题目的比例自动选题。</div>
@@ -4067,8 +3481,15 @@ function selectHomeworkWeakPoint(label) {
   updateHomeworkMixVisibility();
 }
 
+function selectHomeworkCategory(category) {
+  const firstPoint = getKnowledgePointsByCategory(category)[0];
+  if (!firstPoint) return;
+  selectHomeworkWeakPoint(firstPoint);
+}
+
 function enableHomeworkSpecialMode() {
-  const first = getStudentActualWeakPoints(currentStudent || {}).at(0) || homeworkKnowledgePointOptions(currentStudent)[0] || '专项练习';
+  const firstWeakPoint = getStudentActualWeakPoints(currentStudent || {}).find(isStandardKnowledgePoint);
+  const first = firstWeakPoint || homeworkKnowledgePointOptions(currentStudent)[0] || '专项练习';
   homeworkFocusPoint = { label: first };
   const box = document.getElementById('hw-weak-points');
   if (box) box.innerHTML = renderHWWeakPoints(currentStudent);
@@ -4201,7 +3622,7 @@ function renderHomeworkPreview(questions, options = {}) {
           <button class="${hwPreviewMode === 'edit' ? 'active' : ''}" onclick="setHomeworkPreviewMode('edit')">编辑</button>
           <button class="${hwPreviewMode === 'preview' ? 'active' : ''}" onclick="setHomeworkPreviewMode('preview')">预览</button>
         </div>
-        <div class="text-muted text-sm">${hwPreviewMode === 'edit' ? '可编辑题干、答案和推荐理由' : '预览模式会隐藏答案和推荐理由'}</div>
+        <div class="text-muted text-sm">${hwPreviewMode === 'edit' ? '可编辑题干和答案' : '预览模式会隐藏答案'}</div>
       </div>
       <div class="worksheet ${hwPreviewMode === 'preview' ? 'homework-preview-mode' : ''}" id="worksheet-print">
         <div class="worksheet-header">
@@ -4213,7 +3634,7 @@ function renderHomeworkPreview(questions, options = {}) {
           </div>
         </div>
         ${questions.map((q, i) => `
-          <div class="worksheet-q" data-hw-q-index="${i}">
+          <div class="worksheet-q ${q.sourceImage ? 'has-image' : ''} ${q.type === '应用题' ? 'long-answer' : ''}" data-hw-q-index="${i}">
             <div class="worksheet-tools edit-only">
               <button class="worksheet-tool-btn" onclick="moveHomeworkQuestion(${i}, -1)">上移</button>
               <button class="worksheet-tool-btn" onclick="moveHomeworkQuestion(${i}, 1)">下移</button>
@@ -4221,10 +3642,9 @@ function renderHomeworkPreview(questions, options = {}) {
               <button class="worksheet-tool-btn" onclick="deleteHomeworkQuestion(${i})">删除</button>
             </div>
             <div><span class="worksheet-q-num">${i + 1}.</span><span class="worksheet-editable" contenteditable="${hwPreviewMode === 'edit'}" data-field="content">${q.content || ''}</span></div>
-            <div class="worksheet-meta-edit no-print" contenteditable="true" data-field="reason">推荐理由：${q.reason || '综合练习'} · ${q.knowledgePoint || '未标知识点'} · ${q.difficulty || '基础'}</div>
-            <div class="text-muted no-print hw-answer-line" style="font-size:12px;margin-bottom:4px">答案：<span contenteditable="${hwPreviewMode === 'edit'}" data-field="answer">${q.answer || ''}</span></div>
-            <div class="worksheet-line"></div>
-            ${q.type==='应用题' ? '<div class="worksheet-line"></div>' : ''}
+            ${q.sourceImage ? `<div class="worksheet-source-image"><img src="${escapeHtml(q.sourceImage)}" alt="题目配图"></div>` : ''}
+            <span class="hw-answer-line" data-field="answer" hidden>${q.answer || ''}</span>
+            <div class="worksheet-answer-space" aria-hidden="true"></div>
           </div>
         `).join('')}
       </div>
@@ -4404,11 +3824,6 @@ async function generateHomework() {
   const countText = document.querySelector('.hw-count.active-count')?.textContent || '5题';
   const count = parseInt(countText, 10) || 5;
   const weakPointMix = getActiveWeakPointMix();
-  const homeworkCost = getHomeworkCreditCost();
-  if (creditState.balance < homeworkCost) {
-    showToast(`积分不足：生成作业需要 ${homeworkCost} 积分`);
-    return;
-  }
   btn.disabled = true;
   btn.innerHTML = '<div class="spinner"></div> 生成中...';
 
@@ -4437,7 +3852,7 @@ async function generateHomework() {
     const shortageText = data.insufficient ? '（题库不足，仅使用已入库题目）' : '';
     showToast(`作业生成完成：${questions.length} 道题${shortageText}`);
   } catch (err) {
-    showToast('生成失败：' + err.message);
+    showToast('生成失败：' + apiErrorMessage(err));
   } finally {
     btn.disabled = false;
     btn.innerHTML = '✨ 生成作业';
@@ -4492,6 +3907,7 @@ let mistakeSession = {
   analyzing: false,
   analysis: null,       // {weakPoints, knowledgeStats, itemAnalyses, fallback}
   reviews: {},          // { itemId: { knowledgePoint } }
+  page: 1,
   saved: false
 };
 
@@ -4882,11 +4298,11 @@ function renderMistakes() {
   const historyWeakPoints = getStudentActualWeakPoints(s);
 
   document.getElementById('tab-mistakes').innerHTML = `
-    <div style="display:grid;grid-template-columns:340px 1fr;gap:20px;align-items:start">
+    <div style="display:grid;grid-template-columns:340px minmax(0,1fr);gap:20px;align-items:stretch;height:620px">
 
       <!-- 左列：选学生 + 选作业 + 历史薄弱点 -->
-      <div>
-        <div class="card mb-20">
+      <div style="display:flex">
+        <div class="card" style="width:100%;height:620px;overflow:auto">
           <div class="card-title">作业错题分析</div>
           <div class="card-sub">选择已生成作业 → 标记对错 → 确认两级分类 → 写入学生档案</div>
 
@@ -4914,8 +4330,8 @@ function renderMistakes() {
       </div>
 
       <!-- 右列：作业题目 + 判题 + 分析 -->
-      <div>
-        <div class="card" id="mistake-main">
+      <div style="display:flex;min-width:0">
+        <div class="card" id="mistake-main" style="width:100%;min-width:0;height:620px;overflow:hidden;display:flex;flex-direction:column">
           ${renderMistakeMain(sess)}
         </div>
       </div>
@@ -4985,9 +4401,15 @@ function renderMistakeMain(sess) {
 
   const wrongCount = sess.wrongIds.size;
   const totalCount = sess.ocrItems.length;
+  const pageSize = 5;
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+  sess.page = Math.min(Math.max(1, Number(sess.page) || 1), totalPages);
+  const pageStart = (sess.page - 1) * pageSize;
+  const pageItems = sess.ocrItems.slice(pageStart, pageStart + pageSize);
+  const mistakeListStyle = 'display:flex;flex-direction:column;gap:10px';
 
   return `
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-shrink:0">
       <div>
         <div class="card-title" style="margin-bottom:2px">作业题目</div>
         <div class="text-muted text-sm">点击绿色表示做对，点击红色表示做错；只有红色错题会写入薄弱点</div>
@@ -4997,57 +4419,77 @@ function renderMistakeMain(sess) {
       </div>
     </div>
 
-    <div id="mistake-items">
-      ${sess.ocrItems.map(item => {
-        const isWrong = sess.wrongIds.has(item.id);
-        const isCorrect = sess.correctIds?.has(item.id);
-        return `
-          <div class="mistake-item ${isWrong ? 'wrong' : isCorrect ? 'correct' : ''}" data-mistake-id="${item.id}">
-            <div class="mistake-edit" contenteditable="true" oninput="mistakeEditItem(${item.id}, this.textContent)">${renderMathRichText(item.content)}</div>
-            <div class="mistake-actions">
-              <button class="mistake-mark-btn correct ${isCorrect ? 'active' : ''}" title="做对了" aria-label="做对了" onclick="mistakeMarkCorrect(${item.id})">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>
-              </button>
-              <button class="mistake-mark-btn wrong ${isWrong ? 'active' : ''}" title="做错了" aria-label="做错了" onclick="mistakeMarkWrong(${item.id})">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"></path><path d="M6 6l12 12"></path></svg>
-              </button>
+    <div style="flex:1;min-width:0;min-height:0;overflow:auto;padding-right:4px">
+      <div id="mistake-items" style="${mistakeListStyle};min-width:0">
+        ${pageItems.map((item, pageIndex) => {
+          const isWrong = sess.wrongIds.has(item.id);
+          const isCorrect = sess.correctIds?.has(item.id);
+          return `
+            <div class="mistake-item ${isWrong ? 'wrong' : isCorrect ? 'correct' : ''}" data-mistake-id="${item.id}" style="margin-bottom:0">
+              <div style="width:26px;flex-shrink:0;color:var(--muted);font-weight:900">${pageStart + pageIndex + 1}</div>
+              <div class="mistake-edit" contenteditable="true" oninput="mistakeEditItem(${item.id}, this.textContent)">${renderMathRichText(item.content)}</div>
+              <div class="mistake-actions">
+                <button class="mistake-mark-btn correct ${isCorrect ? 'active' : ''}" title="做对了" aria-label="做对了" onclick="mistakeMarkCorrect(${item.id})">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>
+                </button>
+                <button class="mistake-mark-btn wrong ${isWrong ? 'active' : ''}" title="做错了" aria-label="做错了" onclick="mistakeMarkWrong(${item.id})">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"></path><path d="M6 6l12 12"></path></svg>
+                </button>
+              </div>
             </div>
-          </div>
-        `;
-      }).join('')}
+          `;
+        }).join('')}
+      </div>
     </div>
 
-    <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--line);display:flex;align-items:center;gap:12px">
+    <div style="flex-shrink:0">
+      ${renderMistakePagination(sess.page, totalPages, totalCount, pageSize)}
+    </div>
+
+    <div style="margin-top:8px;padding-top:10px;border-top:1px solid var(--line);display:flex;align-items:center;gap:12px;flex-shrink:0">
       <button class="btn btn-primary" id="mistake-analyze-btn" onclick="mistakeAnalyze()" ${wrongCount===0?'disabled':''}>
-        ${sess.analyzing ? '<span class="spinner" style="display:inline-block;margin-right:6px;width:14px;height:14px;border-width:2px"></span>分析中…' : '🧠 分析薄弱分类'}
+        ${sess.analyzing ? '<span class="spinner" style="display:inline-block;margin-right:6px;width:14px;height:14px;border-width:2px"></span>分析中…' : '🧠 分析薄弱点'}
       </button>
-      <span class="text-sm text-muted">${wrongCount===0?'请先用红色 ❌ 标记错题':'题库已分类的题直接汇总；未分类题再由 AI 预填'}</span>
+      <span class="text-sm text-muted">${wrongCount===0?'请先用红色 ❌ 标记错题':'题库已分类的题直接汇总薄弱点'}</span>
     </div>
-
-    ${sess.analysis ? renderMistakeAnalysis(sess.analysis) : ''}
   `;
+}
+
+function renderMistakePagination(page, totalPages, total, pageSize) {
+  if (total <= 0) return '';
+  const start = (page - 1) * pageSize + 1;
+  const end = Math.min(page * pageSize, total);
+  return `
+    <div class="question-pagination" style="margin-top:8px;padding-top:8px">
+      <div class="text-muted text-sm">当前显示 ${start}-${end} / ${total} 道 · 第 ${page}/${totalPages} 页</div>
+      <div class="pagination-controls">
+        <button class="btn btn-secondary btn-sm" onclick="setMistakePage(${page - 1})" ${page <= 1 ? 'disabled' : ''}>上一页</button>
+        <button class="btn btn-secondary btn-sm" onclick="setMistakePage(${page + 1})" ${page >= totalPages ? 'disabled' : ''}>下一页</button>
+      </div>
+    </div>
+  `;
+}
+
+function setMistakePage(page) {
+  const totalPages = Math.max(1, Math.ceil((mistakeSession.ocrItems.length || 0) / 5));
+  mistakeSession.page = Math.min(Math.max(1, Number(page) || 1), totalPages);
+  refreshMistakeMain();
 }
 
 function renderMistakeAnalysis(a) {
   const student = mockData.students.find(st => st.id === mistakeSession.studentId);
   const historyWeak = new Set(student ? getStudentActualWeakPoints(student) : []);
   const stats = normalizeMistakeKnowledgeStats(a, historyWeak);
-  const analysisWeakPoints = normalizeMistakeKnowledgeStats(a, historyWeak).map(item => item.name);
   return `
-    <div style="margin-top:18px;padding:16px;border:1px solid var(--green);border-radius:12px;background:var(--green-light)">
+    <div style="padding:2px 0 0">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
         <span style="font-size:18px">🧠</span>
         <span style="font-size:15px;font-weight:700;color:var(--green)">薄弱分类分析结果</span>
-        ${a.source === 'question-bank' ? '<span class="pill green" style="font-size:10px">题库分类</span>' : a.fallback ? '<span class="pill orange" style="font-size:10px">规则版（AI 服务不可用）</span>' : '<span class="pill green" style="font-size:10px">AI 预填</span>'}
+        <span class="pill green" style="font-size:10px">题库分类汇总</span>
       </div>
 
       <div class="mb-16">
-        <div class="note-label" style="margin-bottom:8px">本次薄弱二级分类</div>
-        <div>${analysisWeakPoints.map(w => renderMistakeTaxonomyTag(w)).join('') || '<span class="text-muted text-sm">无</span>'}</div>
-      </div>
-
-      <div class="mb-16">
-        <div class="note-label" style="margin-bottom:8px">二级分类错误数</div>
+        <div class="note-label" style="margin-bottom:8px">本次薄弱点</div>
         ${stats.length ? `
           <div class="mistake-kp-list">
             ${stats.map(item => `
@@ -5064,14 +4506,27 @@ function renderMistakeAnalysis(a) {
 
       ${renderMistakeSessionCompare(stats)}
 
-      <div class="mb-16 text-muted text-sm">系统已按题库分类汇总薄弱点，不再逐题确认。</div>
-
       <div style="display:flex;gap:8px;padding-top:12px;border-top:1px solid var(--line)">
         <button class="btn btn-primary btn-sm" onclick="mistakeCommit()">✅ 确认并写入档案</button>
         <button class="btn btn-secondary btn-sm" onclick="mistakeAnalyze()">🔄 重新分析</button>
+        <button class="btn btn-secondary btn-sm" onclick="toggleMistakeAnalysisModal(false)">关闭</button>
       </div>
     </div>
   `;
+}
+
+function toggleMistakeAnalysisModal(show) {
+  const modal = document.getElementById('mistake-analysis-modal');
+  const content = document.getElementById('mistake-analysis-modal-content');
+  if (!modal || !content) return;
+  if (show) {
+    content.innerHTML = mistakeSession.analysis
+      ? renderMistakeAnalysis(mistakeSession.analysis)
+      : '<div class="empty-state" style="padding:36px"><div class="empty-text">暂无薄弱点分析结果</div></div>';
+    modal.classList.add('show');
+  } else {
+    modal.classList.remove('show');
+  }
 }
 
 function renderMistakeSessionCompare(stats) {
@@ -5083,16 +4538,15 @@ function renderMistakeSessionCompare(stats) {
   if (!stats.length) return '';
   return `
     <div class="mb-16">
-      <div class="note-label" style="margin-bottom:8px">本次 vs 历史</div>
       <div class="sediment-trend" style="margin-top:0">
         <div class="sediment-trend-card">
-          <div class="sediment-trend-title">新增二级分类</div>
+          <div class="sediment-trend-title">新增薄弱点</div>
           ${newItems.length
             ? newItems.map(item => `<span class="tag weak">${escapeHtml(item.name)}</span>`).join('')
             : '<span class="tag neutral">暂无新增</span>'}
         </div>
         <div class="sediment-trend-card">
-          <div class="sediment-trend-title">反复出现的二级分类</div>
+          <div class="sediment-trend-title">反复出现的薄弱点</div>
           ${repeatItems.length ? `
             <div class="sediment-mini-list" style="margin-top:0">
               ${repeatItems.slice(0, 3).map(item => `
@@ -5141,55 +4595,18 @@ function buildQuestionBankMistakeAnalysis(wrongItems) {
   const knowledgeStats = [...counts.entries()]
     .map(([name, count]) => ({ name, count, isNew: !historyWeak.has(name) }))
     .sort((a, b) => b.count - a.count || Number(b.isNew) - Number(a.isNew));
-  const itemAnalyses = wrongItems.map((item, index) => ({
-    index: index + 1,
-    itemId: item.id,
-    knowledgePoint: item.knowledgePoint
-  }));
   return {
     ok: true,
     source: 'question-bank',
     weakPoints: knowledgeStats.map(item => item.name),
     knowledgeStats,
-    itemAnalyses
+    itemAnalyses: wrongItems.map((item, index) => ({ index: index + 1, itemId: item.id, knowledgePoint: item.knowledgePoint }))
   };
-}
-
-function mergeQuestionBankClassificationsIntoAnalysis(data, wrongItems) {
-  const student = mockData.students.find(st => st.id === mistakeSession.studentId);
-  const historyWeak = new Set(student ? getStudentActualWeakPoints(student) : []);
-  const aiItems = Array.isArray(data?.itemAnalyses) ? data.itemAnalyses : [];
-  const itemAnalyses = wrongItems.map((item, index) => {
-    const aiItem = aiItems.find(x => Number(x.index) === index + 1) || aiItems[index] || {};
-    const knowledgePoint = isQuestionBankClassifiedMistake(item)
-      ? item.knowledgePoint
-      : (cleanKnowledgeNames([aiItem.knowledgePoint])[0] || '待判断考察点');
-    return { index: index + 1, itemId: item.id, knowledgePoint };
-  });
-  const counts = new Map();
-  itemAnalyses.forEach(item => {
-    if (!isStandardKnowledgePoint(item.knowledgePoint)) return;
-    counts.set(item.knowledgePoint, (counts.get(item.knowledgePoint) || 0) + 1);
-  });
-  const knowledgeStats = [...counts.entries()]
-    .map(([name, count]) => ({ name, count, isNew: !historyWeak.has(name) }))
-    .sort((a, b) => b.count - a.count || Number(b.isNew) - Number(a.isNew));
-  return {
-    ...data,
-    weakPoints: knowledgeStats.map(item => item.name),
-    knowledgeStats,
-    itemAnalyses,
-    source: 'mixed-ai'
-  };
-}
-
-function shouldRenderMistakeReviewList(a) {
-  return a?.source !== 'question-bank';
 }
 
 function renderMistakeReviewList(a) {
   ensureMistakeReviews(a);
-  const wrongItems = getMistakeWrongItems().filter(item => !isQuestionBankClassifiedMistake(item));
+  const wrongItems = mistakeSession.ocrItems.filter(item => mistakeSession.wrongIds.has(item.id));
   return `
     <div class="mistake-review-list">
       ${wrongItems.map((item, index) => {
@@ -5198,17 +4615,15 @@ function renderMistakeReviewList(a) {
         return `
           <div class="mistake-review-card">
             <div class="mistake-review-question">${index + 1}. ${escapeHtml(item.content)}</div>
-            <div class="mistake-review-grid" style="grid-template-columns:120px 190px">
+            <div class="mistake-review-grid" style="grid-template-columns:minmax(78px, 120px) minmax(180px, 280px)">
               <div>
                 <div class="note-label">一级分类</div>
-                <select class="mistake-review-select" onchange="mistakeSetReviewCategory(${item.id}, this.value)">
-                  ${mistakeCategoryOptionsHtml(category)}
-                </select>
+                <div class="mistake-review-fixed ${category ? '' : 'pending'}">${escapeHtml(category || '待判断')}</div>
               </div>
               <div>
                 <div class="note-label">二级分类</div>
                 <select class="mistake-review-select" onchange="mistakeSetReviewKnowledge(${item.id}, this.value)">
-                  ${mistakePointOptionsHtml(review.knowledgePoint, category)}
+                  ${qGroupedOptionHtml(review.knowledgePoint, '待判断考察点')}
                 </select>
               </div>
             </div>
@@ -5227,7 +4642,6 @@ function ensureMistakeReviews(a) {
   mistakeSession.ocrItems
     .filter(item => mistakeSession.wrongIds.has(item.id))
     .forEach((item, index) => {
-      if (isQuestionBankClassifiedMistake(item)) return;
       if (mistakeSession.reviews[item.id]) return;
       const aiItem = itemAnalyses.find(x => Number(x.index) === index + 1) || itemAnalyses[index];
       const aiKnowledgePoint = cleanKnowledgeNames([aiItem?.knowledgePoint])[0] || defaultKp;
@@ -5245,34 +4659,19 @@ function getMistakeReview(id) {
   return mistakeSession.reviews[id];
 }
 
-function mistakeCategoryOptionsHtml(currentCategory) {
-  return `
-    <option value="" ${currentCategory ? '' : 'selected'}>待判断</option>
-    ${getKnowledgeCategoryOptions().map(category => `
-      <option value="${escapeHtml(category)}" ${currentCategory === category ? 'selected' : ''}>${escapeHtml(category)}</option>
-    `).join('')}
-  `;
-}
-
-function mistakePointOptionsHtml(currentPoint, category) {
-  const options = category ? getKnowledgePointsByCategory(category) : qKnowledgePointOptions();
-  return `
-    <option value="" ${isStandardKnowledgePoint(currentPoint) ? '' : 'selected'}>待判断考察点</option>
-    ${options.map(point => `<option value="${escapeHtml(point)}" ${currentPoint === point ? 'selected' : ''}>${escapeHtml(point)}</option>`).join('')}
-  `;
-}
-
-function mistakeSetReviewCategory(id, category) {
-  const review = getMistakeReview(id);
-  const options = getKnowledgePointsByCategory(category);
-  review.knowledgePoint = options.includes(review.knowledgePoint) ? review.knowledgePoint : (options[0] || '待判断考察点');
-  refreshMistakeMain();
-}
-
 function mistakeSetReviewKnowledge(id, value) {
   const review = getMistakeReview(id);
   review.knowledgePoint = isStandardKnowledgePoint(value) ? value : '待判断考察点';
   refreshMistakeMain();
+}
+
+function getCommittedMistakeKnowledgePoint(item, index) {
+  const reviewPoint = getMistakeReview(item.id)?.knowledgePoint;
+  if (isStandardKnowledgePoint(reviewPoint)) return reviewPoint;
+  if (isStandardKnowledgePoint(item.knowledgePoint)) return item.knowledgePoint;
+  const analysisItems = Array.isArray(mistakeSession.analysis?.itemAnalyses) ? mistakeSession.analysis.itemAnalyses : [];
+  const analysisItem = analysisItems.find(x => Number(x.itemId) === Number(item.id) || Number(x.index) === index + 1) || analysisItems[index];
+  return isStandardKnowledgePoint(analysisItem?.knowledgePoint) ? analysisItem.knowledgePoint : '待判断考察点';
 }
 
 function normalizeMistakeKnowledgeStats(a, historyWeak) {
@@ -5303,6 +4702,8 @@ function escapeJs(s) {
 
 function renderMathRichText(text) {
   const source = normalizeClientMathText(text);
+  const casesHtml = renderCasesRichText(source);
+  if (casesHtml) return casesHtml;
   const complexTowerHtml = renderComplexFractionTowerRichText(source);
   if (complexTowerHtml) return complexTowerHtml;
   const structuredFractionHtml = renderStructuredFractionRichText(source);
@@ -5310,6 +4711,33 @@ function renderMathRichText(text) {
   const continuedFractionHtml = renderContinuedFractionRichText(source);
   if (continuedFractionHtml) return continuedFractionHtml;
   return renderMathRichTextBase(source);
+}
+
+function renderCasesRichText(source) {
+  const text = String(source || '');
+  if (!/\bcases\b/.test(text)) return '';
+  const casePattern = /\bcases\b([\s\S]*?)\bcases\b/g;
+  let html = '';
+  let last = 0;
+  let changed = false;
+  let match;
+  while ((match = casePattern.exec(text))) {
+    const body = match[1].trim();
+    if (!body) continue;
+    html += renderMathRichTextBase(text.slice(last, match.index));
+    html += mathCasesHtml(body);
+    last = casePattern.lastIndex;
+    changed = true;
+  }
+  if (!changed) return '';
+  html += renderMathRichTextBase(text.slice(last));
+  return html;
+}
+
+function mathCasesHtml(body) {
+  const rows = String(body || '').split(/\s*\\\\\s*/).map(row => row.trim()).filter(Boolean);
+  const rowHtml = rows.map(row => `<span class="math-cases-row">${renderMathRichTextBase(row)}</span>`).join('');
+  return `<span class="math-cases"><span class="math-cases-brace">{</span><span class="math-cases-rows">${rowHtml}</span></span>`;
 }
 
 function renderMathRichTextBase(source) {
@@ -5320,27 +4748,60 @@ function renderMathRichTextBase(source) {
   return escaped
     .replace(/\\underbrace\s*\{([^{}]+)\}\s*_\s*\{([^{}]+)\}/g, (_, body, label) => mathUnderbraceHtml(body, label))
     .replace(/⏟\[([^\]|]+)\|([^\]]+)\]/g, (_, body, label) => mathUnderbraceHtml(body, label))
+    .replace(/([0-9A-Za-z]+…[0-9A-Za-z]+)_([0-9]+个[0-9A-Za-z]+)/g, (_, body, label) => mathUnderbraceHtml(body, label))
+    .replace(/⦃([^⦄]+)⦄\[([^\]]+)\]/g, (_, numerator, denominator) => {
+      return mathFractionHtmlFromHtml(mathFractionalPartHtml(numerator), mathIntegerPartHtml(denominator), true);
+    })
+    .replace(/⦃([^⦄]+)⦄/g, (_, body) => mathFractionalPartHtml(body))
+    .replace(/\[([^\[\]\n]{1,120})\]/g, (match, body) => {
+      return shouldRenderIntegerPart(body) ? mathIntegerPartHtml(body) : match;
+    })
+    .replace(/□/g, '<span class="math-box-placeholder">□</span>')
     .replace(/\\frac\s*\{([^{}]+)\}\s*\{([^{}]+)\}/g, (_, numerator, denominator) => {
-      return mathFractionHtml(numerator, denominator);
+      return mathFractionHtmlFromHtml(mathScriptedExpressionHtml(numerator), mathScriptedExpressionHtml(denominator));
     })
     .replace(/(\d+(?:\.\d+)?)又(\d{1,18})\/(\d{1,18})/g, (_, whole, numerator, denominator) => mathMixedFractionHtml(whole, numerator, denominator))
-    .replace(/（([^（）/]{1,220})）\/（([^（）/]{1,220})）/g, (_, numerator, denominator) => mathFractionHtml(numerator, denominator, true))
-    .replace(/\(([^()/]{1,180})\)\/\(([^()/]{1,180})\)/g, (_, numerator, denominator) => mathFractionHtml(numerator, denominator, true))
-    .replace(/(?<![\dA-Za-z])(\d{1,18})\/(\d{1,18})(?![\dA-Za-z])/g, (_, numerator, denominator) => mathFractionHtml(numerator, denominator))
+    .replace(/（([^（）/]{1,220})）\/（([^（）/]{1,220})）/g, (_, numerator, denominator) => mathFractionHtmlFromHtml(mathScriptedExpressionHtml(numerator), mathScriptedExpressionHtml(denominator), true))
+    .replace(/\(([^()/]{1,180})\)\/\(([^()/]{1,180})\)/g, (_, numerator, denominator) => mathFractionHtmlFromHtml(mathScriptedExpressionHtml(numerator), mathScriptedExpressionHtml(denominator), true))
+    .replace(/\b(S[△_][A-Z]{1,8})\/(S[△_][A-Z]{1,8})\b/g, (_, numerator, denominator) => {
+      return mathFractionHtmlFromHtml(mathAreaLabelHtml(numerator), mathAreaLabelHtml(denominator), true);
+    })
+    .replace(/\b([A-Z]{1,4})\/([A-Z]{1,4})\b/g, (_, numerator, denominator) => mathFractionHtml(numerator, denominator))
+    .replace(/(?<![\dA-Za-z.])(\d{1,18}\^\d{1,4})\/(\d{1,18}\^\d{1,4})(?![\dA-Za-z])/g, (_, numerator, denominator) => {
+      return mathFractionHtmlFromHtml(renderMathRichTextBase(numerator), renderMathRichTextBase(denominator));
+    })
+    .replace(/(?<![\dA-Za-z.])(\d{1,18}(?:\.\d{1,18})?)\/(\d{1,18}\^\d{1,4})(?![\dA-Za-z])/g, (_, numerator, denominator) => {
+      return mathFractionHtmlFromHtml(renderMathRichTextBase(numerator), renderMathRichTextBase(denominator));
+    })
+    .replace(/(?<![\dA-Za-z.])([A-Za-z](?:_[0-9]+)?|[0-9]+|（[^（）/]{1,40}）)\/([0-9]+|[A-Za-z](?:_[0-9]+)?|（[^（）/]{1,40}）)(?![\dA-Za-z])/g, (_, numerator, denominator) => {
+      return mathFractionHtmlFromHtml(mathScriptedExpressionHtml(trimOuterMathBrackets(numerator)), mathScriptedExpressionHtml(trimOuterMathBrackets(denominator)));
+    })
+    .replace(/(?<![\dA-Za-z.])(\d{1,18}(?:\.\d{1,18})?)\/(\d{1,18})(?=[A-Za-z])/g, (_, numerator, denominator) => mathFractionHtml(numerator, denominator))
+    .replace(/(?<![\dA-Za-z.])(\d{1,18}(?:\.\d{1,18})?)\/(\d{1,18})(?![\dA-Za-z])/g, (_, numerator, denominator) => mathFractionHtml(numerator, denominator))
     .replace(/(\d)\u0307/g, (_, digit) => mathRepeatDigitHtml(digit))
     .replace(/\\oplus/g, '⊕')
-    .replace(/\\times/g, '×')
+    .replace(/×/g, '<span class="math-inline-op">×</span>')
+    .replace(/\\times/g, '<span class="math-inline-op">×</span>')
     .replace(/\\div/g, '÷')
-    .replace(/\\cdot/g, '·')
+    .replace(/·/g, '<span class="math-inline-op">·</span>')
+    .replace(/\\cdot/g, '<span class="math-inline-op">·</span>')
     .replace(/\\leq/g, '≤')
     .replace(/\\geq/g, '≥')
     .replace(/\\neq/g, '≠')
     .replace(/\\pm/g, '±')
     .replace(/\\%/g, '%')
-    .replace(/\^\{(\d+)\}/g, '<sup>$1</sup>')
-    .replace(/\^(\d+)/g, '<sup>$1</sup>')
-    .replace(/_\{([^{}]+)\}/g, '<sub>$1</sub>')
-    .replace(/_(\w+)/g, '<sub>$1</sub>')
+    .replace(/([AC])_\{([A-Za-z0-9]{1,8})\}\^\{([A-Za-z0-9+\-]{1,12})\}/g, (_, base, subscript, superscript) => mathScriptedSymbolHtml(base, superscript, subscript))
+    .replace(/([AC])_([0-9]{1,4}|[a-z]{1,4})\^\{([A-Za-z0-9+\-]{1,12})\}/g, (_, base, subscript, superscript) => mathScriptedSymbolHtml(base, superscript, subscript))
+    .replace(/([AC])_\{([0-9]{1,4}|[a-z]{1,4})\}\^([0-9]{1,4}|[a-z]{1,4})/g, (_, base, subscript, superscript) => mathScriptedSymbolHtml(base, superscript, subscript))
+    .replace(/([AC])_([0-9]{1,4}|[a-z]{1,4})\^([0-9]{1,4}|[a-z]{1,4})/g, (_, base, subscript, superscript) => mathScriptedSymbolHtml(base, superscript, subscript))
+    .replace(/([AC])\^\{([A-Za-z0-9+\-]{1,12})\}_\{([A-Za-z0-9]{1,8})\}/g, (_, base, superscript, subscript) => mathScriptedSymbolHtml(base, superscript, subscript))
+    .replace(/([AC])\^\{([A-Za-z0-9+\-]{1,12})\}_([0-9]{1,4}|[a-z]{1,4})/g, (_, base, superscript, subscript) => mathScriptedSymbolHtml(base, superscript, subscript))
+    .replace(/([AC])\^([0-9]{1,4}|[a-z]{1,4})_\{([0-9]{1,4}|[a-z]{1,4})\}/g, (_, base, superscript, subscript) => mathScriptedSymbolHtml(base, superscript, subscript))
+    .replace(/([AC])\^([0-9]{1,4}|[a-z]{1,4})_([0-9]{1,4}|[a-z]{1,4})/g, (_, base, superscript, subscript) => mathScriptedSymbolHtml(base, superscript, subscript))
+    .replace(/\^\{([A-Za-z0-9+\-]{1,12})\}/g, '<sup>$1</sup>')
+    .replace(/\^([A-Za-z0-9]{1,12})/g, '<sup>$1</sup>')
+    .replace(/(?<!_)_\{([^{}]+)\}/g, '<sub>$1</sub>')
+    .replace(/(?<!_)_([0-9]+|[A-Za-z])/g, '<sub>$1</sub>')
     .replace(/\n/g, '<br>');
 }
 
@@ -5430,14 +4891,46 @@ function renderStructuredFractionSegment(source) {
     const denominator = text.slice(denominatorStart + 1, denominatorClose).trim();
     if (!numerator || !denominator) continue;
 
-    html += renderMathRichTextBase(text.slice(last, i));
-    html += mathMlInline(`<mfrac>${mathMlRow(numerator)}${mathMlRow(denominator)}</mfrac>`, true);
+    html += renderStructuredFractionGapText(text.slice(last, i), changed);
+    if (hasStructuredFraction(numerator) || hasStructuredFraction(denominator)) {
+      html += mathMlInline(`<mfrac>${mathMlRow(numerator)}${mathMlRow(denominator)}</mfrac>`, true);
+    } else {
+      html += mathFractionHtmlFromHtml(renderMathRichText(numerator), renderMathRichText(denominator), true);
+    }
     last = denominatorClose + 1;
     i = denominatorClose;
     changed = true;
   }
-  html += renderMathRichTextBase(text.slice(last));
+  const tail = text.slice(last);
+  html += renderStructuredFractionGapText(tail, isFormulaOperatorTail(tail));
   return { html, changed };
+}
+
+function renderStructuredFractionGapText(source, alignOperators = false) {
+  if (!alignOperators) return renderMathRichTextBase(source);
+  return String(source || '').split(/([+×÷=])/g).map(part => {
+    if (/^[+×÷=]$/.test(part)) return `<span class="math-gap-op">${escapeHtml(part)}</span>`;
+    return renderMathRichTextBase(part);
+  }).join('');
+}
+
+function isFormulaOperatorTail(source) {
+  return /^[\s_.，,;；。]*$/.test(String(source || ''));
+}
+
+function hasStructuredFraction(source) {
+  const text = String(source || '');
+  for (let i = 0; i < text.length; i++) {
+    if (text[i] !== '(' && text[i] !== '（') continue;
+    const close = findMatchingMathBracket(text, i);
+    if (close < 0) continue;
+    const slash = skipMathSpaces(text, close + 1);
+    if (text[slash] !== '/') continue;
+    const denominatorStart = skipMathSpaces(text, slash + 1);
+    if (text[denominatorStart] !== '(' && text[denominatorStart] !== '（') continue;
+    if (findMatchingMathBracket(text, denominatorStart) >= 0) return true;
+  }
+  return false;
 }
 
 function mathMlInline(inner, tall = false) {
@@ -5487,9 +4980,13 @@ function mathMlTower(levels) {
 
 function mathMlPlain(value) {
   const text = String(value || '');
-  const tokens = text.match(/\d+(?:\.\d+)?又\d+(?:\.\d+)?\/\d+(?:\.\d+)?|\d+(?:\.\d+)?\^\d+|[A-Za-z]+\^\d+|\d+(?:\.\d+)?\/\d+(?:\.\d+)?|\d+(?:\.\d+)?|[+\-×÷=]|[A-Za-z]+|\s+|./g) || [];
+  const tokens = text.match(/[AC]_\{?[0-9]{1,4}\}?\^\{?[0-9]{1,4}\}?|[AC]_\{?[a-z]{1,4}\}?\^\{?[a-z0-9+\-]{1,12}\}?|[AC]\^\{?[0-9]{1,4}\}?_\{?[0-9]{1,4}\}?|[AC]\^\{?[a-z0-9+\-]{1,12}\}?_\{?[a-z]{1,4}\}?|\d+(?:\.\d+)?又\d+(?:\.\d+)?\/\d+(?:\.\d+)?|\d+(?:\.\d+)?\^\d+|[A-Za-z]+\^\d+|\d+(?:\.\d+)?\/\d+(?:\.\d+)?|\d+(?:\.\d+)?|[+\-×÷=]|[A-Za-z]+|\s+|./g) || [];
   return tokens.map(token => {
     if (/^\s+$/.test(token)) return '<mspace width="0.25em"></mspace>';
+    const scriptedSymbol = parseScriptedSymbolToken(token);
+    if (scriptedSymbol) {
+      return `<msubsup><mi>${escapeHtml(scriptedSymbol.base)}</mi><mn>${escapeHtml(scriptedSymbol.subscript)}</mn><mn>${escapeHtml(scriptedSymbol.superscript)}</mn></msubsup>`;
+    }
     if (/^\d+(?:\.\d+)?又\d+(?:\.\d+)?\/\d+(?:\.\d+)?$/.test(token)) {
       const [whole, fraction] = token.split('又');
       const [numerator, denominator] = fraction.split('/');
@@ -5512,6 +5009,15 @@ function mathMlPlain(value) {
     if (/^[A-Za-z]+$/.test(token)) return `<mi>${escapeHtml(token)}</mi>`;
     return `<mtext>${escapeHtml(token)}</mtext>`;
   }).join('');
+}
+
+function parseScriptedSymbolToken(token) {
+  const text = String(token || '');
+  let match = text.match(/^([AC])_\{?([0-9]{1,4}|[a-z]{1,4})\}?\^\{?([0-9]{1,4}|[a-z0-9+\-]{1,12})\}?$/);
+  if (match) return { base: match[1], subscript: match[2], superscript: match[3] };
+  match = text.match(/^([AC])\^\{?([0-9]{1,4}|[a-z0-9+\-]{1,12})\}?_\{?([0-9]{1,4}|[a-z]{1,4})\}?$/);
+  if (match) return { base: match[1], subscript: match[3], superscript: match[2] };
+  return null;
 }
 
 function mathMlFrac(numerator, denominator) {
@@ -5609,6 +5115,7 @@ function findMatchingMathBracket(source, openIndex) {
 function normalizeClientMathText(value) {
   let text = String(value || '').trim();
   if (!text) return '';
+  text = protectClientFractionalPartMarkers(text);
   text = text
     .replace(/\\n/g, '\n')
     .replace(/\$(.*?)\$/gs, '$1')
@@ -5635,6 +5142,12 @@ function normalizeClientMathText(value) {
     .replace(/\s*-\s*/g, '-')
     .replace(/[ \t]{2,}/g, ' ')
     .trim();
+}
+
+function protectClientFractionalPartMarkers(value) {
+  return String(value || '').replace(/(^|[^\\])\\(?![()[\]])([^\\\n]+?)\\/g, (_, prefix, body) => {
+    return `${prefix}⦃${body.trim()}⦄`;
+  });
 }
 
 function normalizeClientRecurringDecimals(value) {
@@ -5679,6 +5192,29 @@ function mathFractionHtml(numerator, denominator, wide = false) {
   return `<span class="math-frac ${wide ? 'math-frac-wide' : ''}"><span class="math-frac-num">${escapeHtml(numerator)}</span><span class="math-frac-bar"></span><span class="math-frac-den">${escapeHtml(denominator)}</span></span>`;
 }
 
+function mathAreaLabelHtml(label) {
+  const match = String(label || '').match(/^S([△_])([A-Z]{1,8})$/);
+  if (!match) return escapeHtml(label);
+  const prefix = match[1] === '△' ? '△' : '';
+  return `S<span class="math-area-sub">${escapeHtml(prefix + match[2])}</span>`;
+}
+
+function mathScriptedSymbolHtml(base, superscript, subscript) {
+  return `<span class="math-scripted"><span class="math-script-base">${escapeHtml(base)}</span><span class="math-script-stack"><span class="math-script-sup">${escapeHtml(superscript)}</span><span class="math-script-sub">${escapeHtml(subscript)}</span></span></span>`;
+}
+
+function mathScriptedExpressionHtml(value) {
+  return escapeHtml(value)
+    .replace(/([AC])_\{([A-Za-z0-9]{1,8})\}\^\{([A-Za-z0-9+\-]{1,12})\}/g, (_, base, subscript, superscript) => mathScriptedSymbolHtml(base, superscript, subscript))
+    .replace(/([AC])_([A-Za-z0-9]{1,8})\^\{([A-Za-z0-9+\-]{1,12})\}/g, (_, base, subscript, superscript) => mathScriptedSymbolHtml(base, superscript, subscript))
+    .replace(/([AC])_\{([A-Za-z0-9]{1,8})\}\^([A-Za-z0-9]{1,8})/g, (_, base, subscript, superscript) => mathScriptedSymbolHtml(base, superscript, subscript))
+    .replace(/([AC])_([A-Za-z0-9]{1,8})\^([A-Za-z0-9]{1,8})/g, (_, base, subscript, superscript) => mathScriptedSymbolHtml(base, superscript, subscript))
+    .replace(/([AC])\^\{([A-Za-z0-9+\-]{1,12})\}_\{([A-Za-z0-9]{1,8})\}/g, (_, base, superscript, subscript) => mathScriptedSymbolHtml(base, superscript, subscript))
+    .replace(/([AC])\^\{([A-Za-z0-9+\-]{1,12})\}_([A-Za-z0-9]{1,8})/g, (_, base, superscript, subscript) => mathScriptedSymbolHtml(base, superscript, subscript))
+    .replace(/([AC])\^([A-Za-z0-9]{1,8})_\{([A-Za-z0-9]{1,8})\}/g, (_, base, superscript, subscript) => mathScriptedSymbolHtml(base, superscript, subscript))
+    .replace(/([AC])\^([A-Za-z0-9]{1,8})_([A-Za-z0-9]{1,8})/g, (_, base, superscript, subscript) => mathScriptedSymbolHtml(base, superscript, subscript));
+}
+
 function mathMixedFractionHtml(whole, numerator, denominator) {
   return `<span class="math-mixed"><span>${escapeHtml(whole)}</span>${mathFractionHtml(numerator, denominator)}</span>`;
 }
@@ -5695,8 +5231,46 @@ function mathRepeatDigitHtml(digit) {
   return `<span class="math-repeat-digit">${escapeHtml(digit)}<span class="math-repeat-dot"></span></span>`;
 }
 
+function mathFractionalPartHtml(body) {
+  return `<span class="math-fractional-part"><span class="math-fractional-brace">{</span>${renderMathRichText(body)}<span class="math-fractional-brace">}</span></span>`;
+}
+
+function mathIntegerPartHtml(body) {
+  return `<span class="math-integer-part"><span class="math-integer-bracket">[</span>${renderIntegerPartBodyHtml(body)}<span class="math-integer-bracket">]</span></span>`;
+}
+
+function shouldRenderIntegerPart(body) {
+  const text = String(body || '').trim();
+  return Boolean(text && /[0-9A-Za-z_^!/+\\]/.test(text));
+}
+
+function renderIntegerPartBodyHtml(body) {
+  const text = String(body || '').trim();
+  const parsed = parseSlashExpression(text);
+  if (parsed) {
+    return mathFractionHtmlFromHtml(renderMathRichTextBase(parsed.numerator), renderMathRichTextBase(parsed.denominator), true);
+  }
+  return renderMathRichText(trimOuterMathBrackets(text));
+}
+
+function parseSlashExpression(value) {
+  const text = String(value || '').trim();
+  let depth = 0;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (ch === '(' || ch === '（') depth++;
+    else if (ch === ')' || ch === '）') depth = Math.max(0, depth - 1);
+    else if (ch === '/' && depth === 0) {
+      const numerator = trimOuterMathBrackets(text.slice(0, i));
+      const denominator = trimOuterMathBrackets(text.slice(i + 1));
+      if (numerator && denominator) return { numerator, denominator };
+    }
+  }
+  return null;
+}
+
 function mathUnderbraceHtml(body, label) {
-  return `<span class="math-underbrace"><span class="math-underbrace-main">${renderMathRichText(body)}</span><span class="math-underbrace-brace">⏟</span><span class="math-underbrace-label">${escapeHtml(label)}</span></span>`;
+  return `<span class="math-underbrace"><span class="math-underbrace-main">${renderMathRichText(body)}</span><svg class="math-underbrace-brace" viewBox="0 0 100 10" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M1 1.5 C5 1.5 5 4.8 9 4.8 H41 C47 4.8 47 8.5 50 8.5 C53 8.5 53 4.8 59 4.8 H91 C95 4.8 95 1.5 99 1.5"/></svg><span class="math-underbrace-label">${escapeHtml(label)}</span></span>`;
 }
 
 function renderAgentMessage(text) {
@@ -5764,6 +5338,7 @@ function mistakeSelectHomework(homeworkId, shouldRefresh = true) {
   sess.reviews = {};
   sess.saved = false;
   sess.ocrError = '';
+  sess.page = 1;
   if (!record) {
     sess.ocrItems = [];
     sess.ocrDone = false;
@@ -5820,6 +5395,7 @@ function mistakeDeleteItem(id) {
   mistakeSession.wrongIds.delete(id);
   mistakeSession.analysis = null;
   delete mistakeSession.reviews[id];
+  mistakeSession.page = Math.min(Math.max(1, mistakeSession.page || 1), Math.max(1, Math.ceil(mistakeSession.ocrItems.length / 5)));
   refreshMistakeMain();
   showToast('已删除该题');
 }
@@ -5832,6 +5408,7 @@ function mistakeAddItem() {
   mistakeSession.ocrError = '';
   mistakeSession.analysis = null;
   mistakeSession.reviews = mistakeSession.reviews || {};
+  mistakeSession.page = Math.max(1, Math.ceil(mistakeSession.ocrItems.length / 5));
   refreshMistakeMain();
   setTimeout(() => {
     const el = document.querySelector(`[data-mistake-id="${nextId}"] .mistake-edit`);
@@ -5852,6 +5429,7 @@ async function mistakeAnalyze() {
     sess.analysis = buildQuestionBankMistakeAnalysis(wrongItems);
     sess.reviews = {};
     refreshMistakeMain();
+    toggleMistakeAnalysisModal(true);
     showToast('已按题库分类汇总薄弱点');
     return;
   }
@@ -5868,11 +5446,11 @@ async function mistakeAnalyze() {
     });
     const data = await apiJson(resp);
     if (!data.ok) throw new Error(data.error || '分析失败');
-    sess.analysis = mergeQuestionBankClassificationsIntoAnalysis(data, wrongItems);
+    sess.analysis = data;
     applyCreditSummary(data.credit);
     sess.reviews = {};
-    ensureMistakeReviews(sess.analysis);
-    if (data.fallback) showToast('AI 服务暂不可用，已用规则版分析');
+    ensureMistakeReviews(data);
+    toggleMistakeAnalysisModal(true);
   } catch(err) {
     showToast('分析失败：' + err.message);
   }
@@ -5885,12 +5463,12 @@ async function mistakeCommit() {
   if (!sess.analysis) return;
   const wrongItems = sess.ocrItems.filter(it => sess.wrongIds.has(it.id));
   const wrongTexts = wrongItems.map(it => it.content);
-  const mistakeItems = wrongItems.map(item => {
+  const mistakeItems = wrongItems.map((item, index) => {
     return {
       content: item.content,
       questionId: item.questionId || null,
       source: item.source || 'homework',
-      knowledgePoint: isStandardKnowledgePoint(item.knowledgePoint) ? item.knowledgePoint : '待判断考察点'
+      knowledgePoint: getCommittedMistakeKnowledgePoint(item, index)
     };
   });
   if (mistakeItems.some(item => !item.knowledgePoint || item.knowledgePoint === '待判断考察点')) {
@@ -5924,6 +5502,7 @@ async function mistakeCommit() {
     delete studentProfiles[sess.studentId];
     loadStudentProfile(sess.studentId, true);
     sess.saved = true;
+    toggleMistakeAnalysisModal(false);
     showToast(`✅ ${s.name} 学情档案已更新（薄弱点：${data.weakPoints.length} 个）`);
   } catch(err) {
     showToast('保存失败：' + err.message);
@@ -5951,7 +5530,7 @@ async function seedIfEmpty(students, questions) {
     }
     students = await api.get('/students');
   }
-  if (questions.length === 0) {
+  if (questions.length === 0 && canManageSystemQuestionBank()) {
     for (const q of mockData.questions) {
       await api.post('/questions', {
         content: q.content, type: q.type, difficulty: q.difficulty,
@@ -5989,15 +5568,16 @@ async function loadFeishuIntegrationStatus() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-  await restoreCurrentUser();
-  renderLandingAccount();
-  renderWorkspaceAccount();
-  setDate();
-  renderCredits();
-  if (currentUser) {
-    await enterWorkspace();
+  try {
+    await restoreCurrentUser();
+    renderLandingAccount();
+    renderWorkspaceAccount();
+    setDate();
+    renderCredits();
+    if (currentUser) {
+      await enterWorkspace();
+    }
+  } finally {
+    document.body.classList.remove('app-booting');
   }
 });
-</script>
-</body>
-</html>
