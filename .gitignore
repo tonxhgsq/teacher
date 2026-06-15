@@ -18,3 +18,4 @@ task_plan.md
 *_已分类.json
 __pycache__/
 *.pyc
+/*.html
