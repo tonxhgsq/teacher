@@ -4,7 +4,6 @@ const smtpRequired = ['SMTP_HOST', 'SMTP_PORT', 'SMTP_USER', 'SMTP_PASS', 'MAIL_
 const tencentRequired = ['TENCENTCLOUD_SECRET_ID', 'TENCENTCLOUD_SECRET_KEY', 'TENCENT_SES_FROM_EMAIL'];
 
 const trimEnv = key => String(process.env[key] || '').trim();
-const toBase64 = value => Buffer.from(value, 'utf8').toString('base64');
 
 function mailProvider() {
   const provider = trimEnv('MAIL_PROVIDER').toLowerCase();
@@ -40,29 +39,25 @@ function formatTencentDate(date) {
 
 async function sendTencentVerificationEmail(email, code) {
   if (!isTencentMailConfigured()) throw new Error('腾讯云邮件服务未配置完整');
-  const endpoint = trimEnv('TENCENT_SES_ENDPOINT') || 'ses.tencentcloudapi.com';
-  const region = trimEnv('TENCENT_SES_REGION') || 'ap-guangzhou';
+  const region = trimEnv('TENCENT_SES_REGION') || 'ap-hongkong';
+  const endpoint = trimEnv('TENCENT_SES_ENDPOINT') || `ses.${region === 'ap-guangzhou' ? '' : `${region}.`}tencentcloudapi.com`;
   const service = 'ses';
   const action = 'SendEmail';
   const version = '2020-10-02';
   const now = new Date();
   const timestamp = Math.floor(now.getTime() / 1000);
   const date = formatTencentDate(now);
-  const textContent = `你的验证码是 ${code}，10 分钟内有效。`;
-  const htmlContent = `
-  <div style="font-family: Arial, sans-serif;">
-    <p>你的验证码是：</p>
-    <p style="font-size: 28px; font-weight: bold;">${code}</p>
-    <p>验证码 10 分钟内有效，请勿泄露给他人。</p>
-  </div>
-`;
+  const templateId = Number(trimEnv('TENCENT_SES_TEMPLATE_ID')) || 186181;
   const payload = JSON.stringify({
     FromEmailAddress: trimEnv('TENCENT_SES_FROM_EMAIL'),
     Destination: [email],
     Subject: 'AI 学情工作台邮箱验证码',
-    Simple: {
-      Text: toBase64(textContent),
-      Html: toBase64(htmlContent),
+    Template: {
+      TemplateID: templateId,
+      TemplateData: JSON.stringify({
+        code,
+        expire_minutes: '10',
+      }),
     },
   });
   const canonicalHeaders = `content-type:application/json; charset=utf-8\nhost:${endpoint}\nx-tc-action:${action.toLowerCase()}\n`;
