@@ -61,8 +61,7 @@ r.post('/register', async (req, res) => {
   await db.execute({ sql: 'DELETE FROM email_verification_codes WHERE email = ?', args: [email] });
   const user = { id: Number(result.lastInsertRowid), username, email };
   await ensureCreditAccount(user.id);
-  const session = await createSession(user.id);
-  res.json({ ok: true, user, ...session });
+  res.json({ ok: true, user });
 });
 
 r.post('/login', async (req, res) => {

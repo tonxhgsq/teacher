@@ -59,95 +59,13 @@ const statusColors = { 'high-risk': '#e74c3c', 'follow-up': '#e67e22', 'progress
 function withColor(s) { return { ...s, color: statusColors[s.status] || '#9b8b7a' }; }
 
 // ============================================================
-// MOCK DATA（种子数据，仅首次写入数据库用）
+// STATIC UI DATA（正式环境不写入演示学生或题目）
 // ============================================================
 const mockData = {
   teacher: { name: "王老师", class: "三年级（2）班", subject: "小学数学" },
-  students: [
-    { id: 1, name: "张小雨", grade: "三年级", status: "high-risk", color: "#e74c3c",
-      weakPoints: [],
-      errorCauses: { "审题类": 45, "建模类": 30, "计算类": 25 },
-      homeworkRate: 72, lastRecord: "2026-05-28",
-      suggestion: "下次课重点练习分数应用题的审题步骤，建议用画图法辅助理解题意。",
-      recentErrors: ["3/4 + 1/2 = 5/6（分母未通分）", "行程问题漏读速度条件", "千克与克换算错误"],
-      notes: "上课注意力容易分散，需要多互动提问。家长反映在家做题时间不够。"
-    },
-    { id: 2, name: "李明浩", grade: "三年级", status: "follow-up", color: "#e67e22",
-      weakPoints: [],
-      errorCauses: { "建模类": 50, "计算类": 35, "习惯类": 15 },
-      homeworkRate: 88, lastRecord: "2026-05-27",
-      suggestion: "乘法竖式已有进步，本周重点攻克两步应用题的解题思路。",
-      recentErrors: ["两步应用题列式错误", "三位数乘两位数进位遗漏"],
-      notes: "学习态度认真，但解题思路不够灵活。"
-    },
-    { id: 3, name: "陈思琪", grade: "三年级", status: "progress", color: "#2980b9",
-      weakPoints: [],
-      errorCauses: { "概念类": 60, "计算类": 40 },
-      homeworkRate: 95, lastRecord: "2026-05-28",
-      suggestion: "时钟问题已基本掌握，可以适当增加难度，引入跨天推算。",
-      recentErrors: ["跨小时时间差计算"],
-      notes: "进步明显，上周时钟问题正确率从60%提升到85%。"
-    },
-    { id: 4, name: "王子轩", grade: "三年级", status: "stable", color: "#27ae60",
-      weakPoints: [],
-      errorCauses: { "计算类": 30, "习惯类": 20 },
-      homeworkRate: 98, lastRecord: "2026-05-26",
-      suggestion: "基础扎实，可以尝试奥数入门题目，培养数学思维。",
-      recentErrors: ["偶尔粗心计算错误"],
-      notes: "班级前三名，可以适当拔高。"
-    },
-    { id: 5, name: "刘雨桐", grade: "三年级", status: "high-risk", color: "#e74c3c",
-      weakPoints: [],
-      errorCauses: { "概念类": 55, "计算类": 30, "审题类": 15 },
-      homeworkRate: 65, lastRecord: "2026-05-25",
-      suggestion: "除法概念需要从头梳理，建议用实物分组的方式重新建立直觉。",
-      recentErrors: ["有余数除法商写错位置", "余数大于除数", "应用题不知道用除法"],
-      notes: "基础较弱，需要额外补课。家长配合度高。"
-    },
-    { id: 6, name: "赵浩然", grade: "三年级", status: "follow-up", color: "#e67e22",
-      weakPoints: [],
-      errorCauses: { "概念类": 70, "建模类": 30 },
-      homeworkRate: 82, lastRecord: "2026-05-27",
-      suggestion: "周长和面积的概念需要通过实际操作来区分，下次课带尺子量教室。",
-      recentErrors: ["把周长公式用于面积计算", "不规则图形分割方法不对"],
-      notes: "空间想象力较弱，需要多做图形题。"
-    },
-    { id: 7, name: "孙晓萌", grade: "三年级", status: "progress", color: "#2980b9",
-      weakPoints: [],
-      errorCauses: { "计算类": 65, "习惯类": 35 },
-      homeworkRate: 90, lastRecord: "2026-05-28",
-      suggestion: "小数点对齐的习惯已经养成，继续巩固，可以开始小数乘法预习。",
-      recentErrors: ["小数点未对齐导致计算错误"],
-      notes: "书写工整，计算习惯在改善中。"
-    },
-    { id: 8, name: "周天宇", grade: "三年级", status: "stable", color: "#27ae60",
-      weakPoints: [],
-      errorCauses: { "习惯类": 50, "计算类": 50 },
-      homeworkRate: 93, lastRecord: "2026-05-26",
-      suggestion: "基础稳定，重点提升计算速度，练习凑整法和补差法。",
-      recentErrors: ["计算速度慢，考试时间不够"],
-      notes: "理解能力强，但计算速度是短板。"
-    }
-  ],
-  questions: [
-    { id: 1, content: "小明有苹果24个，分给6个小朋友，每人分几个？", type: "应用题", difficulty: "基础", knowledgePoint: "平均数", answer: "4个", status: "approved" },
-    { id: 2, content: "一个长方形长8厘米，宽5厘米，求周长和面积。", type: "计算题", difficulty: "基础", knowledgePoint: "周长", answer: "周长26cm，面积40cm²", status: "approved" },
-    { id: 3, content: "3/4 + 1/4 = ？", type: "计算题", difficulty: "基础", knowledgePoint: "分数计算与比大小", answer: "1", status: "approved" },
-    { id: 4, content: "火车上午8:30出发，行驶了3小时45分钟，几点到达？", type: "应用题", difficulty: "提升", knowledgePoint: "时钟问题", answer: "12:15", status: "approved" },
-    { id: 5, content: "一件衣服原价120元，打八折后多少钱？", type: "应用题", difficulty: "提升", knowledgePoint: "经济问题", answer: "96元", status: "approved" },
-    { id: 6, content: "计算：125 × 8 = ？（用简便方法）", type: "计算题", difficulty: "提升", knowledgePoint: "整数计算", answer: "1000", status: "approved" },
-    { id: 7, content: "一个正方形边长6cm，求面积。", type: "计算题", difficulty: "基础", knowledgePoint: "几何思想", answer: "36cm²", status: "approved" },
-    { id: 8, content: "小红有36张贴纸，比小明多12张，小明有多少张？", type: "应用题", difficulty: "基础", knowledgePoint: "和差倍", answer: "24张", status: "approved" },
-    { id: 9, content: "0.5 + 0.35 = ？", type: "计算题", difficulty: "基础", knowledgePoint: "小数计算", answer: "0.85", status: "approved" },
-    { id: 10, content: "一桶油重15千克，用去了2/5，还剩多少千克？", type: "应用题", difficulty: "提升", knowledgePoint: "分数应用题", answer: "9千克", status: "approved" }
-  ],
-  reminders: [
-    { type: "urgent", text: "张小雨 新增分数应用题错题，需确认薄弱分类", student: 1 },
-    { type: "urgent", text: "刘雨桐 连续3次整数计算错题集中，需专项归因", student: 5 },
-    { type: "normal", text: "李明浩 和差倍专项练习已准备好，待发送", student: 2 },
-    { type: "normal", text: "陈思琪 本周进步明显，可以发送鼓励反馈给家长", student: 3 },
-    { type: "info", text: "题库已导入10道分数应用题，可用于专项练习" }
-  ],
+  students: [],
+  questions: [],
+  reminders: [],
   knowledgeTree: [
     { id: 'calculation', label: '计算', icon: '计', children: [
       { id: 'calculation-topics', label: '二级分类', children: [
@@ -260,13 +178,7 @@ const mockData = {
       ]}
     ]}
   ],
-  feedbackDrafts: {
-    1: { status: "draft", text: "王老师您好！张小雨本周在分数应用题方面仍有困难，主要问题是审题时容易漏掉条件。建议在家练习时，先让孩子用自己的话复述题目，再动笔计算。下次课将重点练习审题方法，并安排同类题巩固。" },
-    2: { status: "sent", text: "王老师您好！李明浩本周整数计算有明显进步，进位错误减少了很多。和差倍题还需要继续练习，下次课会专项训练数量关系。孩子上课认真，请继续保持！" },
-    3: { status: "draft", text: "王老师您好！陈思琪本周进步非常明显！时钟问题正确率从60%提升到85%，非常棒！下次课将开始稍复杂的时间推算，难度会稍有提升，请家长鼓励孩子保持信心。" },
-    5: { status: "none", text: "" },
-    6: { status: "draft", text: "王老师您好！赵浩然本周在几何思想学习中遇到了困难，主要是周长和面积的概念容易混淆。下次课会用实物操作的方式帮助理解。建议在家用尺子量量家里的桌子，感受一下周长和面积的区别。" }
-  }
+  feedbackDrafts: {},
 };
 
 // ============================================================
@@ -313,12 +225,8 @@ let hwPreviewMode = 'edit';
 let hwSubTab = 'generate';
 const creditState = {
   balance: 1280,
-  todayUsed: 26,
-  records: [
-    { title: '生成个性化作业', cost: 12, time: '今天 09:42', detail: '张小雨 · 5题' },
-    { title: 'AI 错题分析', cost: 6, time: '今天 09:18', detail: '2 道错题' },
-    { title: 'AI 补全题库分类', cost: 3, time: '昨天 18:06', detail: '72 道题' }
-  ]
+  todayUsed: 0,
+  records: []
 };
 const creditCosts = { homeworkBase: 8, homeworkPerQuestion: 1, uploadPerFile: 5, feedback: 3 };
 
@@ -480,7 +388,6 @@ async function loadWorkspaceData() {
     api.get('/questions')
   ]);
   qSystemBankState = systemBank;
-  ({ students, questions } = await seedIfEmpty(students, questions));
   mockData.students = students.map(withColor);
   mockData.questions = questions;
   await loadKnowledgeMapStatuses(mockData.students);
@@ -806,13 +713,15 @@ async function submitLandingAuth() {
     return;
   }
   try {
-    const data = await api.post('/auth/register', { username, email, password, code });
+    await api.post('/auth/register', { username, email, password, code });
     registerCodeState = { email: '', code: '' };
-    saveAuthSession(data);
-    renderLandingAccount();
-    renderWorkspaceAccount();
-    showToast('注册成功，已进入工作台');
-    await enterWorkspace();
+    authToken = '';
+    localStorage.removeItem('teacher-auth-token');
+    currentUser = null;
+    showToast('注册成功，请登录');
+    showLandingAuth('login');
+    const usernameInput = document.getElementById('auth-username');
+    if (usernameInput) usernameInput.value = username;
   } catch (err) {
     showToast(err.message || '注册失败');
   }
@@ -3980,7 +3889,7 @@ function renderAgent() {
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
             ${[
               '今天哪些学生需要关注？',
-              '总结张小雨最近学情',
+              '总结某个学生最近学情',
               '根据薄弱点生成 5 道练习',
               '整理本周新增薄弱点'
             ].map(text => `<button class="btn btn-secondary btn-sm" onclick="agentUsePrompt('${text}')">${text}</button>`).join('')}
@@ -3997,7 +3906,7 @@ function renderAgent() {
           </div>
 
           <div style="display:flex;gap:8px;align-items:flex-end;flex-shrink:0">
-            <textarea id="agent-input" rows="2" placeholder="问 AI 助教，比如：帮我看看张小雨最近需要补什么" style="flex:1;resize:none;border:1px solid var(--line);border-radius:12px;background:white;padding:10px 12px;font-size:14px;line-height:1.5;outline:none" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();agentSendMessage()}"></textarea>
+            <textarea id="agent-input" rows="2" placeholder="问 AI 助教，比如：帮我看看某个学生最近需要补什么" style="flex:1;resize:none;border:1px solid var(--line);border-radius:12px;background:white;padding:10px 12px;font-size:14px;line-height:1.5;outline:none" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();agentSendMessage()}"></textarea>
             <button class="btn btn-primary" onclick="agentSendMessage()">发送</button>
           </div>
         </div>
@@ -5517,31 +5426,6 @@ function refreshMistakeMain() {
 // ============================================================
 // INIT
 // ============================================================
-async function seedIfEmpty(students, questions) {
-  // 首次使用：把 mock 数据写入数据库
-  if (students.length === 0) {
-    for (const s of mockData.students) {
-      await api.post('/students', {
-        name: s.name, grade: s.grade, status: s.status,
-        weakPoints: s.weakPoints, errorCauses: s.errorCauses,
-        homeworkRate: s.homeworkRate, lastRecord: s.lastRecord,
-        recentErrors: s.recentErrors, notes: s.notes, suggestion: s.suggestion
-      });
-    }
-    students = await api.get('/students');
-  }
-  if (questions.length === 0 && canManageSystemQuestionBank()) {
-    for (const q of mockData.questions) {
-      await api.post('/questions', {
-        content: q.content, type: q.type, difficulty: q.difficulty,
-        knowledgePoint: q.knowledgePoint, answer: q.answer, status: q.status
-      });
-    }
-    questions = await api.get('/questions');
-  }
-  return { students, questions };
-}
-
 async function loadKnowledgeMapStatuses(students) {
   const entries = await Promise.all(students.map(async s => {
     try {

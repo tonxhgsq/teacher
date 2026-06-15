@@ -34,6 +34,9 @@ try {
   if (js.includes('http://localhost:3001/api')) throw new Error('frontend must not hard-code localhost API fallback');
   if (!js.includes('http://127.0.0.1:3001/api')) throw new Error('local frontend dev server must target the local backend API');
   if (!js.includes("'/api'")) throw new Error('frontend must default API calls to same-origin /api');
+  if (js.includes('seedIfEmpty')) throw new Error('frontend must not seed demo data for production accounts');
+  if (/张小雨|李明浩|刘雨桐|陈思琪/.test(js)) throw new Error('frontend must not ship demo student names');
+  if (js.includes('注册成功，已进入工作台')) throw new Error('register flow must not auto-enter workspace');
   console.log('frontend smoke ok');
 } finally {
   server.kill('SIGTERM');

@@ -2,9 +2,12 @@ import { spawn } from 'child_process';
 
 const port = Number(process.env.SMOKE_PORT || 3999);
 const base = `http://127.0.0.1:${port}`;
+const smokeId = Date.now();
+const smokeUsername = `smoke-${smokeId}`;
+const smokePassword = 'smoke-pass-123';
 const server = spawn(process.execPath, ['src/index.js'], {
   cwd: new URL('..', import.meta.url),
-  env: { ...process.env, PORT: String(port) },
+  env: { ...process.env, PORT: String(port), SYSTEM_QUESTION_BANK_OWNER: smokeUsername },
   stdio: ['ignore', 'pipe', 'pipe'],
 });
 
@@ -40,9 +43,7 @@ async function authedJson(token, path, options = {}) {
 }
 
 async function registerSmokeUser() {
-  const id = Date.now();
-  const email = `smoke-${id}@example.com`;
-  const username = `smoke-${id}`;
+  const email = `${smokeUsername}@example.com`;
   const codeResp = await json('/api/auth/send-code', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -52,10 +53,16 @@ async function registerSmokeUser() {
   const registered = await json('/api/auth/register', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, email, password: 'smoke-pass-123', code: codeResp.devCode }),
+    body: JSON.stringify({ username: smokeUsername, email, password: smokePassword, code: codeResp.devCode }),
   });
-  if (!registered.token) throw new Error('register did not return token');
-  return registered.token;
+  if (!registered.ok || registered.token) throw new Error('register should create the user without logging in');
+  const loggedIn = await json('/api/auth/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username: smokeUsername, password: smokePassword }),
+  });
+  if (!loggedIn.token) throw new Error('login did not return token after register');
+  return loggedIn.token;
 }
 
 async function ensureSeedData(token) {
