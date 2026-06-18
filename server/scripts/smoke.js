@@ -119,7 +119,23 @@ try {
   });
   if (!saved.ok || !saved.id) throw new Error('homework save failed');
 
-  console.log(`smoke ok: generated ${generated.questions.length} questions, saved homework #${saved.id}`);
+  const updated = await authedJson(token, `/api/homework/${saved.id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      studentId: student.id,
+      questions: generated.questions,
+      status: 'printed',
+      meta: { printedAt: new Date().toISOString() },
+    }),
+  });
+  if (!updated.ok || updated.id !== saved.id) throw new Error('homework update failed');
+
+  const records = await authedJson(token, `/api/homework/student/${student.id}`);
+  const printed = records.find(record => record.id === saved.id);
+  if (!printed || printed.status !== 'printed') throw new Error('printed homework record was not returned for checking');
+
+  console.log(`smoke ok: generated ${generated.questions.length} questions, saved and updated homework #${saved.id}`);
 } finally {
   server.kill('SIGTERM');
 }

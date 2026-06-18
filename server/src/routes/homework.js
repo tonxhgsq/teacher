@@ -321,6 +321,30 @@ r.post('/', async (req, res) => {
   res.json({ ok: true, id: Number(result.lastInsertRowid), version });
 });
 
+r.put('/:id', async (req, res) => {
+  const homeworkId = Number(req.params.id);
+  const studentId = Number(req.body.studentId);
+  const questions = Array.isArray(req.body.questions) ? req.body.questions : [];
+  if (!homeworkId || !studentId || questions.length === 0) return res.status(400).json({ error: '缺少作业、学生或题目' });
+  const title = String(req.body.title || '').trim();
+  const meta = req.body.meta && typeof req.body.meta === 'object' ? req.body.meta : {};
+  const status = String(req.body.status || 'draft').trim() || 'draft';
+
+  const result = await db.execute({
+    sql: `UPDATE homework
+          SET questions = ?, title = ?, meta = ?, status = ?
+          WHERE id = ? AND student_id = ? AND owner_user_id = ?`,
+    args: [JSON.stringify(questions), title, JSON.stringify(meta), status, homeworkId, studentId, req.user.id]
+  });
+  if (!result.rowsAffected) return res.status(404).json({ error: '作业记录不存在' });
+
+  const { rows } = await db.execute({
+    sql: 'SELECT id, version FROM homework WHERE id = ? AND owner_user_id = ?',
+    args: [homeworkId, req.user.id]
+  });
+  res.json({ ok: true, id: homeworkId, version: Number(rows[0]?.version || 0) });
+});
+
 r.get('/student/:studentId', async (req, res) => {
   const { rows } = await db.execute({
     sql: 'SELECT * FROM homework WHERE student_id = ? AND owner_user_id = ? ORDER BY created_at DESC',

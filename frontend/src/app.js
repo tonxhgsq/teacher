@@ -3491,6 +3491,7 @@ function viewHomeworkRecord(index) {
     version: record.version,
     meta: record.meta || {},
     title: record.title || '',
+    status: record.status || 'draft',
     questions: (record.questions || []).map((q, i) => ({ ...q, n: i + 1 }))
   };
   hwSubTab = 'generate';
@@ -3558,7 +3559,7 @@ function renderHomeworkPreview(questions, options = {}) {
         `).join('')}
       </div>
       <div class="flex gap-12 no-print" style="margin-top:16px;flex-wrap:wrap">
-        <button class="btn btn-primary" onclick="window.print()">🖨️ 打印 / 导出PDF</button>
+        <button class="btn btn-primary" onclick="printHomework(this)">🖨️ 保存并打印 / 导出PDF</button>
         <button class="btn btn-secondary" onclick="saveHomeworkDraft('draft')">💾 保存草稿</button>
         <button class="btn btn-secondary" onclick="saveHomeworkDraft('assigned')">标记已布置</button>
       </div>
@@ -3768,32 +3769,69 @@ async function generateHomework() {
   }
 }
 
-async function saveHomeworkDraft(status = 'draft') {
+async function persistHomework(status = 'draft', options = {}) {
   if (!hwDraft || !hwDraft.questions?.length) {
     showToast('请先生成作业');
-    return;
+    return null;
   }
   const editedQuestions = collectEditedHomeworkQuestions();
   if (!editedQuestions.length || editedQuestions.some(q => !q.content)) {
     showToast('请先补全题目内容');
-    return;
+    return null;
   }
   hwDraft.questions = editedQuestions;
   const title = document.getElementById('hw-title')?.textContent.trim() || hwDraft.title || '三年级数学个性化练习';
   hwDraft.title = title;
+  const meta = { ...(hwDraft.meta || {}), ...(options.meta || {}) };
+  const payload = {
+    studentId: currentStudent.id,
+    questions: editedQuestions,
+    title,
+    meta,
+    status
+  };
+  const data = hwDraft.id
+    ? await api.put('/homework/' + hwDraft.id, payload)
+    : await api.post('/homework', payload);
+  if (!data.ok) throw new Error(data.error || '保存失败');
+  hwDraft.id = data.id || hwDraft.id;
+  hwDraft.version = data.version || hwDraft.version;
+  hwDraft.meta = meta;
+  hwDraft.status = status;
+  return data;
+}
+
+async function saveHomeworkDraft(status = 'draft') {
   try {
-    const data = await api.post('/homework', {
-      studentId: currentStudent.id,
-      questions: editedQuestions,
-      title,
-      meta: hwDraft.meta || {},
-      status
-    });
-    if (!data.ok) throw new Error(data.error || '保存失败');
+    const data = await persistHomework(status);
+    if (!data) return;
     showToast(status === 'assigned' ? `已标记为已布置 V${data.version}` : `已保存到作业记录 V${data.version}`);
     loadHomeworkRecords();
   } catch (err) {
     showToast('保存失败：' + err.message);
+  }
+}
+
+async function printHomework(button) {
+  const originalText = button?.innerHTML;
+  if (button) {
+    button.disabled = true;
+    button.innerHTML = '<div class="spinner"></div> 保存中...';
+  }
+  try {
+    const status = hwDraft?.status === 'assigned' ? 'assigned' : 'printed';
+    const data = await persistHomework(status, { meta: { printedAt: new Date().toISOString() } });
+    if (!data) return;
+    showToast(`已保存作业记录 V${data.version}，正在打开打印窗口`);
+    loadHomeworkRecords();
+    window.print();
+  } catch (err) {
+    showToast('导出前保存失败：' + err.message);
+  } finally {
+    if (button) {
+      button.disabled = false;
+      button.innerHTML = originalText || '🖨️ 保存并打印 / 导出PDF';
+    }
   }
 }
 
